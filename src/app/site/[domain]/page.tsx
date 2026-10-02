@@ -56,7 +56,7 @@ export default async function SitePage(props: PageProps<"/site/[domain]">) {
           <div className="flex items-center gap-4">
             <SiteFavicon domain={site.domain} size={48} />
             <div className="flex min-w-0 flex-col">
-              <h1 className="truncate text-3xl font-bold tracking-tight sm:text-4xl">{site.domain}</h1>
+              <h1 translate="no" className="truncate text-3xl font-bold tracking-tight sm:text-4xl">{site.domain}</h1>
               {site.title && <p className="text-muted-foreground">{site.title}</p>}
             </div>
           </div>

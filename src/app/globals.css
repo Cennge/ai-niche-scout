@@ -145,5 +145,8 @@
   }
   html {
     @apply font-sans;
+    /* Keep focused elements and anchors clear of the sticky header. */
+    scroll-padding-top: 4.5rem;
+    touch-action: manipulation;
   }
 }

@@ -52,7 +52,7 @@ function SiteRow({ site }: { site: Site }) {
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex flex-col gap-0.5">
           <h3 className="font-semibold">
-            <Link href={`/site/${site.domain}`} className="hover:underline underline-offset-4">
+            <Link href={`/site/${site.domain}`} translate="no" className="break-all hover:underline underline-offset-4">
               {site.domain}
             </Link>
           </h3>

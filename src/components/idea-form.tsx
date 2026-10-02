@@ -31,7 +31,7 @@ export function IdeaForm({ defaultValue, size = "lg" }: { defaultValue?: string;
           required
           maxLength={200}
           defaultValue={defaultValue}
-          placeholder="e.g. AI receptionist for dental clinics"
+          placeholder="e.g. AI receptionist for dental clinics…"
           autoComplete="off"
           className={size === "lg" ? "text-base" : undefined}
         />

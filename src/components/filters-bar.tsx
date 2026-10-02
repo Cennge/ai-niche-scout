@@ -155,7 +155,7 @@ export function FiltersBar({
         {pending && (
           <span className="flex items-center gap-2 text-sm text-muted-foreground" role="status">
             <Spinner />
-            Updating results
+            Updating results…
           </span>
         )}
       </div>

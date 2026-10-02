@@ -19,12 +19,12 @@ export async function generateMetadata(props: PageProps<"/scout">): Promise<Meta
   const niche = filters.niche ? getNicheBySlug(filters.niche)?.name : undefined
   return {
     title: q
-      ? `Competitors for "${q}"`
+      ? `Competitors for “${q}”`
       : niche
         ? `Browse AI startups in ${niche}`
         : "Browse AI startups",
     description: q
-      ? `AI startups that already build "${q}", with a verdict on how crowded the niche is.`
+      ? `AI startups that already build “${q}”, with a verdict on how crowded the niche is.`
       : "Search and filter 33,000+ AI startups by niche, Domain Rating, domain zone and builder.",
     // Result pages are endless permutations: keep them out of the index, follow the links.
     robots: { index: false, follow: true },

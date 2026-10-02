@@ -86,7 +86,7 @@ export default async function AboutPage() {
       <Section id="limits" title="Known limits">
         <ul className="flex list-disc flex-col gap-2 pl-5">
           <li>
-            <strong>&quot;Indexed&quot; is not a launch date.</strong> It is the day FreeSerp first
+            <strong>“Indexed” is not a launch date.</strong> It is the day FreeSerp first
             confirmed the site was live. Most profiles were added in August 2026, so many older companies
             show a recent date.
           </li>

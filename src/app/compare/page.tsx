@@ -82,7 +82,7 @@ export default async function ComparePage(props: PageProps<"/compare">) {
                     <div className="flex flex-col gap-3">
                       <div className="flex items-center gap-3">
                         <SiteFavicon domain={site.domain} />
-                        <Link href={`/site/${site.domain}`} className="truncate text-base font-semibold hover:underline underline-offset-4">
+                        <Link href={`/site/${site.domain}`} translate="no" className="truncate text-base font-semibold hover:underline underline-offset-4">
                           {site.domain}
                         </Link>
                       </div>

@@ -58,7 +58,7 @@ export function VerdictPanel({ total, sample }: { total: number; sample: Site[] 
           <ul className="flex flex-wrap gap-x-5 gap-y-2">
             {leaders.map((site) => (
               <li key={site.domain} className="flex items-baseline gap-1.5">
-                <Link href={`/site/${site.domain}`} className="font-medium hover:underline underline-offset-4">
+                <Link href={`/site/${site.domain}`} translate="no" className="font-medium hover:underline underline-offset-4">
                   {site.domain}
                 </Link>
                 <span className="text-sm tabular-nums text-muted-foreground">DR {site.dr}</span>
