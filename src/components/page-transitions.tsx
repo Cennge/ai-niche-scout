@@ -2,46 +2,33 @@
 
 import * as React from "react"
 import { usePathname } from "next/navigation"
-import { Ssgoi } from "@ssgoi/react"
-import { drill } from "@ssgoi/react/view-transitions"
 
-// Page transitions only where they explain navigation: going one level deeper,
-// from an overview into a niche or a startup profile. Browser Back reverses them.
-const MOTION_CONFIG = {
-  transitions: [
-    { from: ["/", "/niches", "/niche/*", "/scout", "/compare"], to: "/site/*", transition: drill() },
-    { from: ["/", "/niches"], to: "/niche/*", transition: drill() },
-  ],
-}
-const NO_MOTION_CONFIG = { transitions: [] }
+import { cn } from "@/lib/utils"
 
-const reducedMotionQuery = "(prefers-reduced-motion: reduce)"
-
-function subscribe(callback: () => void) {
-  const media = window.matchMedia(reducedMotionQuery)
-  media.addEventListener("change", callback)
-  return () => media.removeEventListener("change", callback)
-}
-
-function usePrefersReducedMotion() {
-  return React.useSyncExternalStore(
-    subscribe,
-    () => window.matchMedia(reducedMotionQuery).matches,
-    () => false,
-  )
-}
-
+// A short enter animation when the route changes: opacity and transform only, so it
+// runs on the compositor in every browser. The first page load is never animated
+// (it would delay the first paint), and reduced-motion users get no animation.
+//
+// SSGOI page transitions were tried first and dropped: in Firefox the outgoing and
+// incoming pages painted out of sync and the motion felt slow.
 export function PageTransitions({ children }: { children: React.ReactNode }) {
-  const reduceMotion = usePrefersReducedMotion()
-  // A manual boundary instead of SsgoiRouteBoundary: the packaged one wraps the page
-  // in Suspense, which streams all content hidden and delays the first paint (LCP).
   const pathname = usePathname()
+  const [initialPathname] = React.useState(pathname)
+  const [navigated, setNavigated] = React.useState(false)
+
+  // Storing "has the route changed since load" from a previous render, per React docs.
+  if (!navigated && pathname !== initialPathname) setNavigated(true)
 
   return (
-    <Ssgoi config={reduceMotion ? NO_MOTION_CONFIG : MOTION_CONFIG}>
-      <div key={pathname} data-ssgoi-transition={pathname} className="flex flex-1 flex-col">
-        {children}
-      </div>
-    </Ssgoi>
+    <div
+      key={pathname}
+      className={cn(
+        "flex flex-1 flex-col",
+        navigated &&
+          "animate-in fade-in slide-in-from-bottom-2 duration-200 ease-out motion-reduce:animate-none",
+      )}
+    >
+      {children}
+    </div>
   )
 }

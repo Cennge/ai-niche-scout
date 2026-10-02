@@ -93,7 +93,7 @@ The header holds the logo, Scout, Niches, Compare (with a badge showing how many
 - `src/lib/freeserp.ts` is the single typed API client. It sends identification params (`project`) and uses `fetch` caching with `revalidate`. Niche totals are cached for 24 hours.
 - Pages are Server Components that read `searchParams`. Filters are small client components that only update the URL. No client-side data fetching is needed for core flows.
 - Light and dark themes come from `next-themes` and shadcn semantic tokens.
-- SSGOI page transitions (drill) for overview → niche page and list → site profile. They are turned off when `prefers-reduced-motion` is set.
+- A 200 ms enter animation on route change, skipped on first load and under `prefers-reduced-motion`. SSGOI page transitions were tried and dropped after Firefox issues.
 
 ## SEO
 

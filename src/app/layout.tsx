@@ -58,7 +58,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               Skip to content
             </a>
             <SiteHeader />
-            <main id="content" className="relative z-0 flex flex-1 flex-col overflow-x-clip">
+            <main id="content" className="flex flex-1 flex-col">
               <PageTransitions>{children}</PageTransitions>
             </main>
             <SiteFooter />

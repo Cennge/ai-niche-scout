@@ -4,7 +4,7 @@
 
 - **Demo:** _Vercel link will be added after deploy_
 - **Site plan:** [PLAN.md](PLAN.md) covers the goal, audience, pages and structure.
-- **Stack:** Next.js 16 (App Router) · TypeScript · Tailwind v4 · shadcn/ui · SSGOI
+- **Stack:** Next.js 16 (App Router) · TypeScript · Tailwind v4 · shadcn/ui
 
 | Light: home and AI market map | Dark: idea verdict and competitors |
 |---|---|
@@ -31,7 +31,7 @@ Other details:
   - `sitemap.xml` with all niche pages, and `robots.txt`;
   - JSON-LD `ItemList` on niche pages;
   - `noindex` on endless filter permutations.
-- **Page transitions** (SSGOI "drill") from overviews into niche and site pages. They are turned off when the system asks to reduce motion.
+- **A short enter animation on navigation:** 200 ms, opacity and transform only. It is skipped on the first load so it never delays the first paint, and turned off when the system asks to reduce motion.
 
 ## How it uses the FreeSerp API
 
@@ -114,6 +114,7 @@ Problems found by verification and fixed along the way:
 | A constant imported from a `"use client"` module into a server page arrives as a client reference, not a number | Moved shared values to [src/lib/compare.ts](src/lib/compare.ts) |
 | Race between the localStorage provider and the compare page's URL sync: a shared link was overwritten | Rewrote the store with `useSyncExternalStore` |
 | SSGOI's packaged Next.js boundary wraps the page in Suspense, so all HTML streamed hidden. LCP was 4.5s and Performance 84 | A manual pathname boundary. LCP 3.0s, Performance 95 |
+| SSGOI transitions in Firefox: the incoming page painted text first and the rest later, and the motion felt slow (found by manual testing in Firefox) | Dropped SSGOI and replaced it with a 200 ms CSS enter animation that behaves the same in every browser |
 | Favicon 404s in the console and stretched icons | Server-side favicon proxy ([src/app/api/favicon/route.ts](src/app/api/favicon/route.ts)) with a lettered fallback, cached for a day |
 | An "Earlier" month option and months with zero results | Month options built from real counts |
 | A niche stat that said nothing ("WordPress, 5% of top 100") | Replaced with the top site by DR |
@@ -122,7 +123,7 @@ Problems found by verification and fixed along the way:
 
 - **Deploying to Vercel**: next step, the code is ready for it.
 - **Automated tests.** Verification was manual in the browser. Unit tests for the treemap, verdict and filter parsing would be the first to add.
-- **Smoothness of the page transitions** was checked only in a headless browser, which throttles animation frames. It still needs a pass on real devices.
+- **Cross-browser pass on real devices.** The navigation animation was measured in Chromium. Firefox, Safari and mobile devices still need a manual check.
 - **Open Graph images** per niche.
 
 ## What I would do next
