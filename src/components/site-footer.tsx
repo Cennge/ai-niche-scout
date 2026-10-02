@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+import { CompareBar } from "@/components/compare-bar"
 import { LogoMark } from "@/components/site-header"
 import { NICHES } from "@/lib/niches"
 
@@ -73,6 +74,8 @@ export function SiteFooter() {
           Startup data from FreeSerp, refreshed daily. Summaries are machine-written from each homepage.
         </p>
       </div>
+      {/* Inside the footer, so the space it reserves under the fixed bar keeps the footer colour. */}
+      <CompareBar />
     </footer>
   )
 }
