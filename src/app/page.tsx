@@ -23,19 +23,31 @@ export default async function Home() {
           className="contours-fade pointer-events-none absolute inset-0 -z-10"
           aria-hidden="true"
         >
-          <div className="contours size-full" />
+          <div className="contours-reveal size-full">
+            <div className="contours size-full" />
+          </div>
         </div>
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-16 sm:px-6 sm:py-24">
           <div className="flex max-w-3xl flex-col gap-6">
-            <h1 className="text-4xl leading-[1.05] font-bold tracking-tight text-balance sm:text-6xl">
+            <h1 className="hero-rise text-4xl leading-[1.05] font-bold tracking-tight text-balance sm:text-6xl">
               Is your AI idea already taken?
             </h1>
-            <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
+            <p
+              className="hero-rise max-w-2xl text-lg leading-relaxed text-muted-foreground"
+              style={{ "--delay": "80ms" } as React.CSSProperties}
+            >
               Describe it in a few words. We search {formatNumber(total)} AI startups and show who
               already builds it and how crowded the niche is.
             </p>
-            <IdeaForm />
-            <ExampleIdeas />
+            <div
+              className="hero-fade-rise relative z-10"
+              style={{ "--delay": "180ms" } as React.CSSProperties}
+            >
+              <IdeaForm />
+            </div>
+            <div className="hero-fade-rise" style={{ "--delay": "280ms" } as React.CSSProperties}>
+              <ExampleIdeas />
+            </div>
           </div>
         </div>
       </section>

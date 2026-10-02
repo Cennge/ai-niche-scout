@@ -8,6 +8,7 @@ import { LayoutGrid, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { NICHES, type Niche } from "@/lib/niches"
+import { useReducedMotion } from "@/lib/use-reduced-motion"
 import { cn } from "@/lib/utils"
 
 export const EXAMPLE_IDEAS = [
@@ -43,6 +44,50 @@ function suggestNiches(value: string): Niche[] {
     .map((s) => s.niche)
 }
 
+const STATIC_PLACEHOLDER = "e.g. AI receptionist for dental clinics…"
+const TYPED_IDEAS = [
+  "AI receptionist for dental clinics",
+  "chat with your contracts",
+  "resume builder for nurses",
+  "AI tutor for kids math",
+  "podcast from a blog post",
+]
+
+// Types example ideas into the placeholder, one after another, while the field is idle.
+function useTypedPlaceholder(enabled: boolean) {
+  const [text, setText] = React.useState(STATIC_PLACEHOLDER)
+
+  React.useEffect(() => {
+    if (!enabled) return
+    let idea = 0
+    let chars = 0
+    let deleting = false
+    let timer: ReturnType<typeof setTimeout>
+    const step = () => {
+      const full = TYPED_IDEAS[idea]
+      chars += deleting ? -1 : 1
+      setText(`e.g. ${full.slice(0, chars)}`)
+      let delay = deleting ? 22 : 55
+      if (!deleting && chars === full.length) {
+        deleting = true
+        delay = 1800
+      } else if (deleting && chars === 0) {
+        deleting = false
+        idea = (idea + 1) % TYPED_IDEAS.length
+        delay = 350
+      }
+      timer = setTimeout(step, delay)
+    }
+    timer = setTimeout(step, 900)
+    return () => {
+      clearTimeout(timer)
+      setText(STATIC_PLACEHOLDER)
+    }
+  }, [enabled])
+
+  return enabled ? text : STATIC_PLACEHOLDER
+}
+
 // A plain GET form that works before JavaScript loads; with JS it also suggests niches.
 export function IdeaForm({
   defaultValue,
@@ -56,6 +101,9 @@ export function IdeaForm({
   const [value, setValue] = React.useState(defaultValue ?? "")
   const [open, setOpen] = React.useState(false)
   const [active, setActive] = React.useState(-1)
+  const [focused, setFocused] = React.useState(false)
+  const reduceMotion = useReducedMotion()
+  const placeholder = useTypedPlaceholder(size === "lg" && !focused && !value && !reduceMotion)
   const suggestions = React.useMemo(() => suggestNiches(value), [value])
   const expanded = open && suggestions.length > 0
 
@@ -86,6 +134,14 @@ export function IdeaForm({
       action="/scout"
       method="get"
       role="search"
+      // With JavaScript, navigate client-side so the scan state and page transition show.
+      onSubmit={(event) => {
+        const q = value.trim()
+        if (!q) return
+        event.preventDefault()
+        setOpen(false)
+        router.push(`/scout?q=${encodeURIComponent(q)}`)
+      }}
       className="flex w-full flex-col gap-2 sm:flex-row"
     >
       <div className="relative flex-1">
@@ -108,10 +164,16 @@ export function IdeaForm({
               setOpen(true)
               setActive(-1)
             }}
-            onFocus={() => setOpen(true)}
-            onBlur={() => setOpen(false)}
+            onFocus={() => {
+              setOpen(true)
+              setFocused(true)
+            }}
+            onBlur={() => {
+              setOpen(false)
+              setFocused(false)
+            }}
             onKeyDown={onKeyDown}
-            placeholder="e.g. AI receptionist for dental clinics…"
+            placeholder={placeholder}
             autoComplete="off"
             role="combobox"
             aria-autocomplete="list"

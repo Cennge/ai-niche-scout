@@ -5,6 +5,7 @@ import { SearchX } from "lucide-react"
 import { FiltersBar } from "@/components/filters-bar"
 import { IdeaForm } from "@/components/idea-form"
 import { ResultsPagination } from "@/components/results-pagination"
+import { ResultsRegion, ResultsTransitionProvider } from "@/components/results-transition"
 import { SiteList } from "@/components/site-list"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { NicheBreakdown, VerdictPanel } from "@/components/verdict-panel"
@@ -67,43 +68,47 @@ export default async function ScoutPage(props: PageProps<"/scout">) {
         </div>
       )}
 
-      <section aria-labelledby="results-heading" className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1">
-          <h2 id="results-heading" className="text-2xl font-semibold tracking-tight">
-            {filters.q ? "Competitors" : "Startups"}
-          </h2>
-          <p className="text-muted-foreground" aria-live="polite">
-            {pluralize(list.total, "startup")} with the current filters.
-          </p>
-        </div>
+      <ResultsTransitionProvider>
+        <section aria-labelledby="results-heading" className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <h2 id="results-heading" className="text-2xl font-semibold tracking-tight">
+              {filters.q ? "Competitors" : "Startups"}
+            </h2>
+            <p className="text-muted-foreground" aria-live="polite">
+              {pluralize(list.total, "startup")} with the current filters.
+            </p>
+          </div>
 
-        <Suspense>
-          <FiltersBar hasQuery={Boolean(filters.q)} indexedOptions={indexedOptions} />
-        </Suspense>
+          <Suspense>
+            <FiltersBar hasQuery={Boolean(filters.q)} indexedOptions={indexedOptions} />
+          </Suspense>
 
-        {list.results.length ? (
-          <SiteList sites={list.results} />
-        ) : (
-          <Empty className="border">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <SearchX />
-              </EmptyMedia>
-              <EmptyTitle>No startups match these filters</EmptyTitle>
-              <EmptyDescription>
-                Remove a filter or describe the idea in fewer words.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        )}
+          <ResultsRegion>
+            {list.results.length ? (
+              <SiteList sites={list.results} />
+            ) : (
+              <Empty className="border">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <SearchX />
+                  </EmptyMedia>
+                  <EmptyTitle>No startups match these filters</EmptyTitle>
+                  <EmptyDescription>
+                    Remove a filter or describe the idea in fewer words.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            )}
 
-        <ResultsPagination
-          pathname="/scout"
-          searchParams={raw}
-          page={filters.page}
-          lastPage={maxPage(list.total)}
-        />
-      </section>
+            <ResultsPagination
+              pathname="/scout"
+              searchParams={raw}
+              page={filters.page}
+              lastPage={maxPage(list.total)}
+            />
+          </ResultsRegion>
+        </section>
+      </ResultsTransitionProvider>
     </div>
   )
 }

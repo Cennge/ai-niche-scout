@@ -1,8 +1,9 @@
 import Link from "next/link"
 
+import { CountUp } from "@/components/count-up"
 import { ShareButton } from "@/components/share-button"
 import type { Site } from "@/lib/freeserp"
-import { formatNumber, pluralize } from "@/lib/format"
+import { formatNumber } from "@/lib/format"
 import { getNicheByName } from "@/lib/niches"
 import { cn } from "@/lib/utils"
 import { getVerdict, VERDICTS } from "@/lib/verdict"
@@ -49,9 +50,15 @@ export function VerdictPanel({
       >
         {[...VERDICTS].reverse().map((v, i) => (
           <div key={v.label} className="flex flex-col gap-1.5">
-            <div
-              className={cn("h-2 rounded-full", i < verdict.level ? LEVEL_FILL[i] : "bg-muted")}
-            />
+            {/* Filled segments light up one after another, up to the verdict. */}
+            <div className="h-2 overflow-hidden rounded-full bg-muted">
+              {i < verdict.level && (
+                <div
+                  className={cn("grow-x h-full rounded-full", LEVEL_FILL[i])}
+                  style={{ "--delay": `${150 + i * 220}ms` } as React.CSSProperties}
+                />
+              )}
+            </div>
             <span
               className={cn(
                 "text-xs",
@@ -64,8 +71,10 @@ export function VerdictPanel({
         ))}
       </div>
       <p className="text-lg">
-        <span className="font-semibold">{pluralize(total, "AI startup")}</span> match
-        this idea.
+        <span className="font-semibold">
+          <CountUp value={total} /> {total === 1 ? "AI startup" : "AI startups"}
+        </span>{" "}
+        {total === 1 ? "matches" : "match"} this idea.
       </p>
       <p className="text-muted-foreground">{verdict.description}</p>
       {total < 20 && (
@@ -119,7 +128,7 @@ export function NicheBreakdown({ sample }: { sample: Site[] }) {
         </p>
       </div>
       <ul className="flex flex-col gap-3">
-        {rows.map(([name, count]) => {
+        {rows.map(([name, count], i) => {
           const niche = getNicheByName(name)
           const share = Math.round((count / sample.length) * 100)
           return (
@@ -138,7 +147,12 @@ export function NicheBreakdown({ sample }: { sample: Site[] }) {
                 <span className="shrink-0 tabular-nums text-muted-foreground">{share}%</span>
               </div>
               <div className="h-1.5 rounded-full bg-muted">
-                <div className="h-full rounded-full bg-primary" style={{ width: `${share}%` }} />
+                <div
+                  className="grow-x h-full rounded-full bg-primary"
+                  style={
+                    { width: `${share}%`, "--delay": `${250 + i * 90}ms` } as React.CSSProperties
+                  }
+                />
               </div>
             </li>
           )

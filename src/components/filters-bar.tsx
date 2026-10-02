@@ -4,6 +4,7 @@ import * as React from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { X } from "lucide-react"
 
+import { useResultsTransition } from "@/components/results-transition"
 import { Button } from "@/components/ui/button"
 import { Field, FieldLabel } from "@/components/ui/field"
 import {
@@ -71,7 +72,7 @@ export function FiltersBar({
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const [pending, startTransition] = React.useTransition()
+  const { pending, startTransition } = useResultsTransition()
 
   const get = (key: string) => searchParams.get(key) ?? ANY
 

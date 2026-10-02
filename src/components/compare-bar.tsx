@@ -25,7 +25,7 @@ export function CompareBar() {
         className="fixed inset-x-0 bottom-4 z-40 flex justify-center px-4 pb-[env(safe-area-inset-bottom)] animate-in fade-in slide-in-from-bottom-4 duration-200 motion-reduce:animate-none"
       >
         <div className="flex max-w-full items-center gap-3 rounded-xl border bg-popover py-2 pr-2 pl-3 text-popover-foreground shadow-lg">
-          <div className="flex -space-x-2" aria-hidden="true">
+          <div className="flex -space-x-2" aria-hidden="true" data-compare-target>
             {domains.map((domain) => (
               // eslint-disable-next-line @next/next/no-img-element -- tiny proxied favicons, no optimisation needed
               <img
@@ -39,13 +39,20 @@ export function CompareBar() {
             ))}
           </div>
           <p className="text-sm whitespace-nowrap">
-            <span className="font-medium">{domains.length}</span>
+            <span key={domains.length} className="bump inline-block font-medium">
+              {domains.length}
+            </span>
             <span className="text-muted-foreground"> of {MAX_COMPARE} selected</span>
           </p>
           <Button asChild size="sm">
             <Link href={compareHref(domains)}>Compare</Link>
           </Button>
-          <Button variant="ghost" size="icon-sm" aria-label="Clear selection" onClick={() => replace([])}>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Clear selection"
+            onClick={() => replace([])}
+          >
             <X />
           </Button>
         </div>

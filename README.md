@@ -35,7 +35,16 @@ Other details:
   - `sitemap.xml` with all niche pages, and `robots.txt`;
   - JSON-LD `ItemList` on niche pages;
   - `noindex` on endless filter permutations.
-- **A short enter animation on navigation:** 200 ms, opacity and transform only. It is skipped on the first load so it never delays the first paint, and turned off when the system asks to reduce motion.
+- **Motion that explains something.** Each effect plays once, uses only opacity and transform, and is turned off when the system asks to reduce motion:
+  - the verdict reveals itself: the count runs up to the result, meter segments light up one by one, and the niche bars grow;
+  - while a scout loads, a radar sweeps the contour map with "Scanning for “your idea”…";
+  - the hero assembles once: contour lines spread from the peak, then the search and examples rise in. The heading and intro only move and never fade, so the first paint is not delayed;
+  - the hero search types example ideas into its placeholder until you focus it;
+  - the market map grows in, largest niches first, the first time it scrolls into view;
+  - adding to compare flies the favicon into the compare bar, and the counter bumps;
+  - old results dim while new filters load;
+  - the theme switch spreads in a circle from the toggle (View Transitions API, with a plain switch as fallback);
+  - a 200 ms enter animation runs on navigation, never on the first load.
 
 ## How it uses the FreeSerp API
 
@@ -85,11 +94,11 @@ No API key or environment variables are needed. The optional `NEXT_PUBLIC_SITE_U
 
 | Page | Performance | Accessibility | Best practices | SEO |
 |---|---|---|---|---|
-| `/` | 92 | 97 | 100 | 100 |
+| `/` | 92 | 100 | 100 | 100 |
 | `/niche/legal` | 86 | 100 | 100 | 100 |
-| `/scout?q=AI receptionist` | 92 | 100 | 100 | 66* |
+| `/scout?q=AI receptionist` | 90 | 100 | 100 | 66* |
 
-\* Scout result pages are `noindex` on purpose. Niche pages pay about 6 points of Performance for the charts library (recharts). The remaining accessibility note on `/` is the small tiles of the smallest niches on the map. Their area is honest by design, and every niche is also reachable from the table on `/niches`.
+\* Scout result pages are `noindex` on purpose. Niche pages pay about 6 points of Performance for the charts library (recharts).
 
 ## How I worked with AI
 
@@ -126,6 +135,7 @@ Problems found by verification and fixed along the way:
 | The command palette crashed on open: the new shadcn `CommandDialog` no longer wraps its children in `<Command>` | Added the wrapper and force-mounted the "Scout this idea" group |
 | The verdict share image returned nothing: Satori needs `display: flex` on any element with several text nodes | Built the line as one string |
 | A focusable chart inside an `aria-hidden` container (Lighthouse `aria-hidden-focus`) | Turned off the recharts keyboard layer. The data stays available in a screen-reader table |
+| The idea form submitted as a plain GET, a full page reload that skipped the scan state and transition | Client-side navigation on submit, with the GET form kept as the no-JavaScript fallback |
 | The single chart hue failed the dataviz palette validator (too gray in light mode, too light in dark mode) | Picked `--chart-bar` steps that pass every check in both themes |
 
 ## Not done yet

@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+import { RevealOnView } from "@/components/reveal-on-view"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import type { NicheStat } from "@/lib/freeserp"
 import { formatNumber } from "@/lib/format"
@@ -33,9 +34,7 @@ function NichePreview({ niche, totalStartups }: { niche: NicheStat; totalStartup
         </div>
         <div>
           <dt className="text-muted-foreground">Share of all</dt>
-          <dd className="font-medium">
-            {((niche.total / totalStartups) * 100).toFixed(1)}%
-          </dd>
+          <dd className="font-medium">{((niche.total / totalStartups) * 100).toFixed(1)}%</dd>
         </div>
       </dl>
       {niche.leaders.length > 0 && (
@@ -82,16 +81,19 @@ function TreemapLayout({
       className={cn("relative w-full overflow-hidden rounded-xl border", className)}
       style={{ aspectRatio: `${width} / ${height}` }}
     >
-      {tiles.map(({ x, y, w, h, item }) => (
+      {tiles.map(({ x, y, w, h, item }, i) => (
         <li
           key={item.slug}
-          className="absolute p-px"
-          style={{
-            left: `${(x / width) * 100}%`,
-            top: `${(y / height) * 100}%`,
-            width: `${(w / width) * 100}%`,
-            height: `${(h / height) * 100}%`,
-          }}
+          className="treemap-tile absolute p-px"
+          style={
+            {
+              "--i": i,
+              left: `${(x / width) * 100}%`,
+              top: `${(y / height) * 100}%`,
+              width: `${(w / width) * 100}%`,
+              height: `${(h / height) * 100}%`,
+            } as React.CSSProperties
+          }
         >
           <TileLink item={item} totalStartups={totalStartups} previews={previews} />
         </li>
@@ -142,33 +144,35 @@ function TileLink({
 
 export function MarketMap({ stats, totalStartups }: { stats: NicheStat[]; totalStartups: number }) {
   return (
-    <figure className="flex flex-col gap-3">
-      <TreemapLayout
-        stats={stats}
-        totalStartups={totalStartups}
-        width={1200}
-        height={620}
-        previews
-        className="hidden sm:block"
-      />
-      <TreemapLayout
-        stats={stats}
-        totalStartups={totalStartups}
-        width={360}
-        height={560}
-        className="sm:hidden"
-      />
-      <figcaption className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-        <span>Startups per niche</span>
-        <ul className="flex flex-wrap gap-x-3 gap-y-1">
-          {DENSITY_BANDS.map((band) => (
-            <li key={band.label} className="flex items-center gap-1.5">
-              <span className={cn("size-3 rounded-sm border", band.tile)} aria-hidden="true" />
-              {band.label}
-            </li>
-          ))}
-        </ul>
-      </figcaption>
-    </figure>
+    <RevealOnView>
+      <figure className="flex flex-col gap-3">
+        <TreemapLayout
+          stats={stats}
+          totalStartups={totalStartups}
+          width={1200}
+          height={620}
+          previews
+          className="hidden sm:block"
+        />
+        <TreemapLayout
+          stats={stats}
+          totalStartups={totalStartups}
+          width={360}
+          height={560}
+          className="sm:hidden"
+        />
+        <figcaption className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+          <span>Startups per niche</span>
+          <ul className="flex flex-wrap gap-x-3 gap-y-1">
+            {DENSITY_BANDS.map((band) => (
+              <li key={band.label} className="flex items-center gap-1.5">
+                <span className={cn("size-3 rounded-sm border", band.tile)} aria-hidden="true" />
+                {band.label}
+              </li>
+            ))}
+          </ul>
+        </figcaption>
+      </figure>
+    </RevealOnView>
   )
 }

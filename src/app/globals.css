@@ -175,3 +175,121 @@
   }
 }
 
+/* ---------- Motion ---------- */
+/* Every effect below answers an action or explains a result, plays once, and is
+   switched off for people who ask the system to reduce motion. */
+
+@property --reveal {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 150%;
+}
+
+@keyframes grow-x {
+  from { transform: scaleX(0); }
+}
+@keyframes rise-in {
+  from { transform: translateY(12px); }
+}
+@keyframes fade-rise-in {
+  from { opacity: 0; transform: translateY(12px); }
+}
+@keyframes contour-reveal {
+  from { --reveal: 0%; }
+  to { --reveal: 150%; }
+}
+@keyframes radar-sweep {
+  to { transform: rotate(1turn); }
+}
+@keyframes bump {
+  40% { transform: scale(1.35); }
+}
+
+@layer components {
+  /* Bars and meters that fill from the left, staggered with --delay. */
+  .grow-x {
+    transform-origin: left center;
+    animation: grow-x 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: var(--delay, 0ms);
+  }
+
+  /* Hero sequence. Heading and intro only move (no fade), so the first paint is not delayed. */
+  .hero-rise {
+    animation: rise-in 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: var(--delay, 0ms);
+  }
+  .hero-fade-rise {
+    animation: fade-rise-in 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: var(--delay, 0ms);
+  }
+
+  /* Contour lines spread outward from the main peak once on load. */
+  .contours-reveal {
+    mask-image: radial-gradient(
+      circle at 72% 40%,
+      #000 calc(var(--reveal) - 12%),
+      transparent var(--reveal)
+    );
+    animation: contour-reveal 1800ms cubic-bezier(0.3, 0.7, 0.2, 1) both;
+  }
+
+  /* Radar sweep used while a scout is loading. */
+  .radar-sweep {
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      color-mix(in oklch, var(--primary) 45%, transparent) 50deg,
+      transparent 70deg
+    );
+    animation: radar-sweep 2.4s linear infinite;
+  }
+
+  .bump {
+    animation: bump 350ms ease-out;
+  }
+
+  /* Market map tiles grow in, largest first, the first time the map scrolls into view. */
+  [data-reveal="pending"] .treemap-tile {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  [data-reveal] .treemap-tile {
+    transition:
+      opacity 450ms ease-out,
+      transform 450ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition-delay: calc(var(--i, 0) * 14ms);
+  }
+}
+
+/* Circular theme switch, only while a theme change is running (see lib/theme-switch.ts). */
+.theme-transition::view-transition-old(root),
+.theme-transition::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+.theme-transition::view-transition-new(root) {
+  animation: theme-reveal 550ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes theme-reveal {
+  from { clip-path: circle(0 at var(--theme-x, 50%) var(--theme-y, 0)); }
+  to { clip-path: circle(var(--theme-r, 150vmax) at var(--theme-x, 50%) var(--theme-y, 0)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grow-x,
+  .hero-rise,
+  .hero-fade-rise,
+  .contours-reveal,
+  .radar-sweep,
+  .bump {
+    animation: none;
+  }
+  [data-reveal] .treemap-tile {
+    transition: none;
+  }
+  [data-reveal="pending"] .treemap-tile {
+    opacity: 1;
+    transform: none;
+  }
+}
+

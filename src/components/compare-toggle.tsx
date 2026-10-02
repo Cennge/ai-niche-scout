@@ -7,18 +7,24 @@ import { toast } from "sonner"
 import { useCompare } from "@/components/compare-store"
 import { Button } from "@/components/ui/button"
 import { compareHref, MAX_COMPARE } from "@/lib/compare"
+import { flyTo } from "@/lib/fly-to"
 
 export function CompareToggle({ domain }: { domain: string }) {
   const router = useRouter()
   const { domains, has, toggle } = useCompare()
   const selected = has(domain)
 
-  const onClick = () => {
+  const onClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     toggle(domain)
     if (selected) {
       toast(`Removed ${domain} from compare`)
       return
     }
+    flyTo(
+      `/api/favicon?d=${encodeURIComponent(domain)}`,
+      event.currentTarget.getBoundingClientRect(),
+      "[data-compare-target]",
+    )
     const next = [...domains, domain].slice(-MAX_COMPARE)
     const dropped = domains.length >= MAX_COMPARE ? domains[0] : null
     toast.success(`Added ${domain} to compare`, {

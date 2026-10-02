@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/command"
 import { Kbd, KbdGroup } from "@/components/ui/kbd"
 import { NICHES } from "@/lib/niches"
+import { switchTheme } from "@/lib/theme-switch"
 
 const PAGES = [
   { href: "/", label: "Home", icon: Home },
@@ -150,15 +151,15 @@ export function CommandMenu() {
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup heading="Theme">
-              <CommandItem value="Light theme" onSelect={() => run(() => setTheme("light"))}>
+              <CommandItem value="Light theme" onSelect={() => run(() => switchTheme("light", setTheme))}>
                 <Sun />
                 Light theme
               </CommandItem>
-              <CommandItem value="Dark theme" onSelect={() => run(() => setTheme("dark"))}>
+              <CommandItem value="Dark theme" onSelect={() => run(() => switchTheme("dark", setTheme))}>
                 <Moon />
                 Dark theme
               </CommandItem>
-              <CommandItem value="System theme" onSelect={() => run(() => setTheme("system"))}>
+              <CommandItem value="System theme" onSelect={() => run(() => switchTheme("system", setTheme))}>
                 <Monitor />
                 System theme
               </CommandItem>
