@@ -1,182 +1,198 @@
 # AI Niche Scout
 
-**Is your AI idea already taken?** Describe an AI product idea and see who already builds it, how crowded the niche is, and what the whole AI startup market looks like. Built on the [FreeSerp](https://freeserp.ai) sites index (`index=sites`, AI niche).
+**Is your AI idea already taken?** Сервис, который за несколько секунд показывает, кто уже делает вашу AI-идею, насколько занята ниша и как выглядит весь рынок AI-стартапов. Построен на публичном API [FreeSerp](https://freeserp.ai): индекс главных страниц сайтов (`index=sites`), ниша AI.
 
-- **Demo:** _Vercel link will be added after deploy_
-- **Site plan:** [PLAN.md](PLAN.md) covers the goal, audience, pages and structure.
-- **Stack:** Next.js 16 (App Router) · TypeScript · Tailwind v4 · shadcn/ui
+- **Демо:** _ссылка на Vercel будет добавлена после деплоя_
+- **Код:** [github.com/Cennge/ai-niche-scout](https://github.com/Cennge/ai-niche-scout)
+- **Стек:** Next.js 16 (App Router), TypeScript, Tailwind v4, shadcn/ui
+- **Подробный план:** [PLAN.md](PLAN.md)
 
-| Light: home and AI market map | Dark: idea verdict and competitors |
+| Светлая тема: главная и карта рынка | Тёмная тема: вердикт и конкуренты |
 |---|---|
-| ![Home page with the AI market map](docs/screenshot-home.png) | ![Scout results with the verdict](docs/screenshot-scout-dark.png) |
+| ![Главная с картой рынка](docs/screenshot-home.png) | ![Результаты с вердиктом](docs/screenshot-scout-dark.png) |
 
-## What it does
+## План сайта
 
-| Page | What you get |
+**Цель.** Помочь быстро понять, стоит ли браться за AI-идею: кто уже её делает, сколько их и где на рынке свободно. Человек описывает идею и в течение 10 секунд получает вердикт и список конкурентов.
+
+**Аудитория:**
+
+| Кто | Что ищет | Куда идёт |
+|---|---|---|
+| Инди-фаундеры, команды хакатонов | «Моя идея уже занята? Кто конкуренты?» | Главная → результаты |
+| Маркетологи, SEO и контент-специалисты | Какие AI-ниши растут, кто в них лидирует | Карта рынка → страницы ниш |
+| Инвесторы, аналитики, журналисты | Как выглядит рынок в конкретной нише | Страницы ниш, сравнение |
+| Разработчики | AI-инструмент под задачу | Поиск, профили сайтов |
+
+**Страницы и структура:**
+
+```
+/                      Главная: поиск идеи, карта 54 ниш, недавно проиндексированные
+/scout?q=…             Результаты: вердикт, конкуренты, разбивка по нишам, фильтры
+                       (без q это каталог всех стартапов, например /scout?niche=legal)
+/niches                Все 54 ниши: карта и рейтинг
+/niche/[slug]          Страница ниши: статистика, графики, лидеры, новинки (54 страницы)
+/site/[domain]         Профиль стартапа и похожие стартапы
+/compare?d=a,b,c       Сравнение до трёх стартапов
+/about                 Откуда данные, как считается вердикт, ограничения
+```
+
+Шапка: логотип, разделы, поиск по Ctrl/⌘ K, переключатель темы. Подвал: популярные ниши, разделы, ссылки на данные. Всё состояние страницы (фильтры, сортировка, страница, выбор для сравнения) хранится в URL, поэтому любой экран можно отправить ссылкой.
+
+## Что сделано
+
+| Страница | Что на ней |
 |---|---|
-| `/` | Idea search with niche suggestions, a treemap of all 54 AI niches sized by startup count (hover a tile for its share and top 3 sites), and recently indexed startups |
-| `/scout?q=…` | A verdict on the idea (Open field, Emerging, Competitive or Crowded), where the competitors cluster by niche, the most established players, a share button, and the full competitor list with 6 filters, sorting and pagination |
-| `/niches` | The market map and a ranked table of all niches |
-| `/niche/[slug]` | 54 pre-rendered niche pages: size, rank, share, top site, charts of Domain Rating, domain zones and site builders (exact counts), leaders by Domain Rating, newest arrivals, niches of a similar size |
-| `/site/[domain]` | A startup profile with similar startups |
-| `/compare?d=a,b,c` | Up to three startups side by side. The link is shareable |
-| `/about` | Data source, how verdicts are calculated, known limits |
+| `/` | Поиск идеи с подсказками ниш. Карта всех 54 ниш, где размер плитки равен числу стартапов, а при наведении видны доля и топ-3 сайта. Недавно проиндексированные стартапы |
+| `/scout?q=…` | Вердикт по идее (Open field, Emerging, Competitive, Crowded) со шкалой, разбивка конкурентов по нишам, самые крупные игроки, кнопка «Share verdict». Полный список конкурентов с 6 фильтрами, сортировкой и пагинацией |
+| `/niches` | Карта рынка и рейтинг всех ниш |
+| `/niche/[slug]` | 54 заранее собранные страницы: размер, место, доля, главный сайт, графики по Domain Rating, доменным зонам и конструкторам (точные подсчёты, не выборка), лидеры, новинки, похожие ниши |
+| `/site/[domain]` | Профиль стартапа и похожие стартапы |
+| `/compare` | До трёх стартапов рядом, ссылкой можно поделиться |
+| `/about` | Источник данных, методика вердикта, известные ограничения |
 
-Other details:
+**Интерфейс:**
+- светлая, тёмная и системная темы без вспышки при загрузке;
+- командная палитра (Ctrl/⌘ K или `/`): поиск идеи, переход к нише или странице, смена темы;
+- плавающая панель сравнения и уведомления на каждое действие;
+- шеринг вердикта: системное меню на телефоне, копирование ссылки на компьютере;
+- фирменные изолинии в hero и своя иконка.
 
-- **Light, dark and system themes**, without a flash on load.
-- **Search everywhere:** a command palette (Ctrl/⌘ K or `/`) to scout an idea, jump to any of the 54 niches or a page, or switch the theme.
-- **Compare from anywhere:** a floating bar shows the selection, and toasts confirm every add and remove.
-- **Share a verdict:** native share sheet on mobile, copy link elsewhere. Every shared link gets its own Open Graph image with the verdict, and each niche page has one with its size and rank.
-- **Brand details:** topographic contour lines behind the hero (generated once into [public/contours.svg](public/contours.svg)), a custom icon, and a footer that links the most popular niches.
-- **Every view lives in the URL**, so any state can be shared: filters, sort, page and the compare selection.
-- **SEO:**
-  - per-page metadata and canonical URLs;
-  - `sitemap.xml` with all niche pages, and `robots.txt`;
-  - JSON-LD `ItemList` on niche pages;
-  - `noindex` on endless filter permutations.
-- **Motion that explains something.** Each effect plays once, uses only opacity and transform, and is turned off when the system asks to reduce motion:
-  - the verdict reveals itself: the count runs up to the result, meter segments light up one by one, and the niche bars grow;
-  - while a scout loads, a radar sweeps the contour map with "Scanning for “your idea”…";
-  - the hero assembles once: contour lines spread from the peak, then the search and examples rise in. The heading and intro only move and never fade, so the first paint is not delayed;
-  - the hero search types example ideas into its placeholder until you focus it;
-  - the market map grows in, largest niches first, the first time it scrolls into view;
-  - adding to compare flies the favicon into the compare bar, and the counter bumps;
-  - old results dim while new filters load;
-  - the theme switch spreads in a circle from the toggle (View Transitions API, with a plain switch as fallback);
-  - a 200 ms enter animation runs on navigation, never on the first load.
+**Анимации со смыслом.** Каждая срабатывает один раз и отключается, если в системе включено уменьшение движения:
+- вердикт «раскрывается»: число отсчитывается, сегменты шкалы загораются по очереди;
+- при загрузке результатов радар сканирует карту с надписью «Scanning for “идея”…»;
+- карта рынка вырастает при первом появлении на экране;
+- стартап «летит» в панель сравнения;
+- старые результаты затемняются, пока грузятся новые;
+- тема переключается кругом от кнопки.
 
-## How it uses the FreeSerp API
+**SEO:**
+- свои title, description и canonical у каждой страницы;
+- `sitemap.xml` и `robots.txt`;
+- JSON-LD на страницах ниш;
+- OG-картинки для сайта, каждой ниши и каждого вердикта;
+- настоящие 404 вместо мягких;
+- `noindex` на бесконечных комбинациях фильтров.
 
-All calls go through one typed server-side client, [src/lib/freeserp.ts](src/lib/freeserp.ts). Every request sends `ai_startups=1` to keep only genuine AI products, plus `project=ai-niche-scout` for identification. Responses are cached by Next.js: 1 hour for searches, 24 hours for counts.
+### Как используется API FreeSerp
 
-| Feature | Request |
+Все запросы идут через один типизированный серверный клиент [src/lib/freeserp.ts](src/lib/freeserp.ts). В каждый запрос передаются `ai_startups=1` (только настоящие AI-продукты) и `project=ai-niche-scout`. Ответы кешируются: поиск на час, подсчёты на сутки. Одновременно уходит не больше 12 запросов, чтобы не нагружать бесплатный API при сборке.
+
+| Функция | Запрос |
 |---|---|
-| Idea verdict and niche breakdown | `q=<idea>&size=100`. The verdict is based on `total`, the breakdown counts `ai_categories` across the top 100 matches |
-| Market map, niche counts and hover previews | `ai_categories=<niche>&sort=dr&size=3` for each of the 54 niches: `total` sizes the tile, the results are the top 3 sites. The API has no facet endpoint, so these run in parallel and are cached for a day |
-| Niche charts | Exact counts, one `size=1` request per bar: `dr_min`/`dr_max` bands, `tld` per zone, `ai_source` per builder. About 25 requests per niche, cached for a day. A concurrency cap of 12 keeps a full build polite |
-| Filters | `ai_categories`, `dr_min`, `from_date`/`to_date`, `tld`, `ai_source`, `sort=went_live\|dr` with `order`, `from`/`size` |
-| "Indexed" month filter | One `from_date`/`to_date` count per recent month. Only months that contain data are offered, for example "August 2026 (32,890)" |
-| Niche leaders and newest | `ai_categories=<niche>&sort=dr` and `sort=went_live` |
-| Startup profile | `q=<domain>`, keeping the exact domain match (there is no domain filter) |
-| Similar startups | Same main niche plus the site's own title as the query |
+| Вердикт и разбивка по нишам | `q=<идея>&size=100`: вердикт по `total`, разбивка по `ai_categories` первых 100 совпадений |
+| Карта рынка и превью при наведении | `ai_categories=<ниша>&sort=dr&size=3` для каждой из 54 ниш. Отдельного запроса со статистикой по категориям в API нет, поэтому запросы идут параллельно |
+| Графики ниши | Точные подсчёты, один запрос `size=1` на столбец: диапазоны `dr_min`/`dr_max`, `tld`, `ai_source` |
+| Фильтры | `ai_categories`, `dr_min`, `from_date`/`to_date`, `tld`, `ai_source`, `sort` + `order`, `from`/`size` |
+| Профиль сайта | `q=<домен>` с точным совпадением (фильтра по домену в API нет) |
+| Похожие стартапы | Та же ниша плюс заголовок сайта как запрос |
 
-What exploring the data turned up, and how the UI handles it:
+**Что выяснилось при изучении данных и как это учтено:**
+- `went_live` — это не дата запуска, а дата, когда FreeSerp впервые увидел сайт. В интерфейсе поле подписано «Indexed».
+- Большинство профилей добавлено в августе 2026 года, самые новые от 8 сентября. Поэтому «новинки» — это недавно проиндексированные сайты.
+- Примерно у 80% новых стартапов нет Domain Rating, поэтому DR используется как фильтр, а не как сортировка по умолчанию.
+- `first_seen` у всех сайтов равен 2025-01-01, поэтому это поле не показывается.
+- Поиск требует совпадения всех слов, и длинное описание находит меньше сайтов. Если совпадений меньше 20, интерфейс предлагает сократить запрос.
 
-- **`went_live` is not a launch date.** It is labelled "Indexed".
-- **Most profiles were added in August 2026**, and the newest are from 2026-09-08.
-- **About 80% of new startups have no Domain Rating**, so DR is a filter and not the default sort.
-- **`first_seen` is 2025-01-01 for every site**, so it is not shown.
-- **Search matches all words**, so long descriptions find fewer sites. The verdict panel suggests shortening the query when there are fewer than 20 matches.
+## Как запустить
 
-## Run locally
-
-Requires Node.js 20.9 or newer.
+Нужен Node.js 20.9 или новее. Ключ API и переменные окружения не нужны.
 
 ```bash
 npm install
 npm run dev          # http://localhost:3000
 ```
 
-Production build and tests:
+Production-сборка и проверки:
 
 ```bash
 npm run build && npm start
-npm test             # unit tests (vitest)
+npm test             # юнит-тесты (vitest)
 npm run lint
 ```
 
-No API key or environment variables are needed. The optional `NEXT_PUBLIC_SITE_URL` sets the canonical domain. On Vercel it is detected automatically.
+Необязательная переменная `NEXT_PUBLIC_SITE_URL` задаёт домен для canonical, sitemap и OG. На Vercel домен подставляется автоматически.
 
-## Quality checks
+## Что не успел
 
-- `npm run lint`, `npm run build` (including the TypeScript check) and `npm test` pass.
-- **38 unit tests** ([test/](test/)) cover the pure logic:
-  - the treemap: areas proportional to values, no overlaps, inside the canvas;
-  - verdict thresholds;
-  - URL filter parsing, including hostile values such as `dr=abc`, `page=-5` and `page=99999`;
-  - month ranges with leap years;
-  - formatting;
-  - the niche list.
-- **Edge cases checked by hand against the production build:**
-  - XSS in the query is escaped;
-  - unknown niches and startups return a real 404 with `noindex`, not a soft 404;
-  - duplicate or extra compare domains are dropped;
-  - malformed filters are ignored;
-  - the favicon proxy rejects anything that is not a domain.
-- **Browser tests (Playwright + axe-core)** on every page, in light and dark themes, at 1280px and 375px:
-  - no accessibility violations, including colour contrast;
-  - no horizontal scroll;
-  - no console errors.
-- **Keyboard and flows:**
-  - the skip link and a visible focus ring on every control;
-  - the `/` and Ctrl/⌘ K palette;
-  - the search combobox with arrows and Enter;
-  - the mobile menu;
-  - the compare flow end to end: add, fly-in, bar, URL sync, shared link, removal;
-  - filters restored from the URL;
-  - every motion effect measured frame by frame.
-- Lighthouse, mobile preset, production build on localhost:
+- **Деплой на Vercel.** Код готов, осталось подключить репозиторий.
+- **Автоматические браузерные тесты в CI.** Прогоны Playwright и axe делались локальными скриптами, в репозиторий и CI они не вынесены.
+- **Проверка на реальных устройствах.** Анимации замерены в Chromium. Firefox, Safari и телефоны нужно проверить вручную.
 
-| Page | Performance | Accessibility | Best practices | SEO |
+## Что доработал бы дальше
+
+- **Тренды во времени**, когда у индекса накопится история: рост ниш по месяцам, «разогревающиеся» ниши.
+- **Новости по стартапу и нише** из соседнего API той же команды, [freenewsapi.ai](https://freenewsapi.ai).
+- **Сохранённые идеи и уведомления**, когда для вашей идеи появляется новый конкурент.
+- **Смысловой поиск по описанию идеи** (эмбеддинги) вместо поиска по словам, чтобы длинные описания не проигрывали.
+
+## Как я работал с AI
+
+Проект сделан в **Claude Code** (агент Anthropic, тот же, что во вкладке Code в Claude Desktop) на модели Claude Opus 5.5 в VS Code. Вся настройка AI лежит в репозитории, её можно посмотреть и повторить:
+
+- **[CLAUDE.md](CLAUDE.md)** — правила проекта для агента:
+  - стек и какой скилл когда применять;
+  - правила работы с API: только с сервера, всегда `ai_startups=1`, никогда не называть `went_live` датой запуска;
+  - соглашения по коду;
+  - что значит «готово»: lint, тесты, сборка, проверка в обеих темах и на мобильной ширине.
+- **[.claude/skills/](.claude/skills/)** — четыре скилла, отобранных сознательно:
+  - `shadcn` — официальные правила shadcn/ui;
+  - `vercel-react-best-practices` — производительность React и Next.js;
+  - `web-design-guidelines` — финальная проверка UI;
+  - `frontend-design` — типографика и палитра.
+
+  Большие «базы стилей» вроде ui-ux-pro-max я не ставил: они конфликтуют с правилами shadcn.
+- **[.mcp.json](.mcp.json)** — MCP-сервер shadcn для поиска и добавления компонентов.
+
+**Процесс:**
+1. Сначала изучил документацию и реальные данные API: размеры ниш, свежесть данных, покрытие DR, как поиск ведёт себя на фразах. Идея и пороги вердикта выросли из этих цифр, а не из догадок.
+2. Выбрал направление вместе с AI: продуктовый инструмент вместо кричащего лендинга, он лучше подходит SEO-компании. Затем написал план ([PLAN.md](PLAN.md)), и только потом код.
+3. Строил маленькими шагами. Каждый экран проверял в браузере, а не верил коду на слово.
+4. Прогонял чек-листы, Lighthouse и axe и исправлял то, что они находили.
+
+**Что нашла проверка и как исправлено:**
+
+| Проблема | Решение |
+|---|---|
+| Мягкий 404: несуществующий стартап отдавал код 200 | Убрал потоковый индикатор загрузки этой страницы, теперь настоящий 404 с `noindex` |
+| Готовая обёртка SSGOI для переходов прятала весь HTML до загрузки JS: LCP 4.5 с, Performance 84 | Своя обёртка: LCP 3.0 с, Performance 95 |
+| Анимация SSGOI в Firefox показывала страницу частями и была медленной (нашёл при ручной проверке) | Отказался от SSGOI в пользу CSS-анимации на 200 мс, одинаковой во всех браузерах |
+| Гонка между localStorage и URL на странице сравнения: общая ссылка перезаписывалась | Переписал хранилище на `useSyncExternalStore` |
+| Константа из `"use client"`-модуля в серверной странице превращалась в клиентскую ссылку | Вынес общие значения в [src/lib/compare.ts](src/lib/compare.ts) |
+| Командная палитра падала: новый `CommandDialog` в shadcn не оборачивает содержимое в `<Command>` | Добавил обёртку |
+| Форма поиска делала полную перезагрузку, и экран сканирования проскакивал | Клиентская навигация, а обычная отправка формы осталась запасным вариантом без JS |
+| Ошибки 404 от фавиконов в консоли и растянутые иконки | Серверный прокси фавиконов с буквой-заглушкой ([src/app/api/favicon/route.ts](src/app/api/favicon/route.ts)) |
+| axe: контраст 4.3:1 у приглушённого текста и 3.6:1 у чисел на карте | Затемнил приглушённый текст (6:1) и убрал прозрачность у чисел |
+| Цвет графиков не прошёл проверку палитры из скилла dataviz | Подобрал оттенки, которые проходят все проверки в обеих темах |
+| Фокусируемый график внутри `aria-hidden` | Отключил у графика фокус, данные доступны в скрытой таблице для скринридеров |
+| Пустые варианты месяцев в фильтре и бесполезная статистика «WordPress, 5%» | Месяцы строятся из реальных данных, вместо статистики показывается главный сайт ниши |
+
+## Проверка качества
+
+- **Сборка и код:** `npm run lint`, `npm test` и `npm run build` (с проверкой TypeScript) проходят.
+- **38 юнит-тестов** ([test/](test/)):
+  - treemap: площади пропорциональны, плитки не перекрываются и не выходят за границы;
+  - пороги вердикта;
+  - разбор фильтров из URL, включая вредные значения вроде `dr=abc`, `page=-5`, `page=99999`;
+  - диапазоны месяцев с високосными годами;
+  - форматирование и список ниш.
+- **Граничные случаи на production-сборке:**
+  - XSS в запросе экранируется;
+  - несуществующие ниши и стартапы отдают 404;
+  - кривые фильтры игнорируются;
+  - лишние домены в сравнении отбрасываются.
+- **Браузерные проверки** (Playwright + axe-core) на всех страницах, в обеих темах, на 1280px и 375px:
+  - 0 нарушений доступности, включая контраст;
+  - нет горизонтального скролла;
+  - нет ошибок в консоли.
+- **Клавиатура и сценарии:** skip link, видимый фокус, палитра, подсказки в поиске, мобильное меню, сравнение от начала до конца, восстановление фильтров из URL.
+- **Lighthouse** (mobile, production-сборка):
+
+| Страница | Performance | Accessibility | Best practices | SEO |
 |---|---|---|---|---|
 | `/` | 92 | 100 | 100 | 100 |
 | `/niche/legal` | 86 | 100 | 100 | 100 |
 | `/site/goodcall.com` | 93 | 100 | 100 | 100 |
 | `/scout?q=AI receptionist` | 89 | 100 | 100 | 66* |
 
-\* Scout result pages are `noindex` on purpose. Niche pages pay about 6 points of Performance for the charts library (recharts).
-
-## How I worked with AI
-
-The project was built with **Claude Code** (Anthropic's coding agent, the same agent as in Claude Desktop's Code tab), running Claude Opus 5.5 in VS Code. The AI setup is committed to the repo, so it can be reviewed and reproduced:
-
-- **[CLAUDE.md](CLAUDE.md):** project rules for the agent. It covers the stack, which skill to use when, the API rules (server-side only, always `ai_startups=1`, never call `went_live` a launch date), conventions, and what "done" means: lint, build, and a check in both themes and at mobile width.
-- **[.claude/skills/](.claude/skills/):** project-level skills, chosen deliberately and kept to four:
-  - `shadcn`, the official shadcn/ui rules;
-  - `vercel-react-best-practices`;
-  - `web-design-guidelines`, used as the final UI review;
-  - `frontend-design`, for typography and palette.
-
-  I chose not to add large "style database" skills such as ui-ux-pro-max: they would conflict with the shadcn rules.
-- **[.mcp.json](.mcp.json):** the shadcn MCP server for searching and adding registry components. It is wrapped with `cmd /c` for Windows.
-
-The process:
-
-1. **Read the API docs and probe the real data** before choosing an idea: niche sizes, data freshness, DR coverage, and how search behaves on natural-language queries. The idea and the verdict thresholds come from those numbers, not from guesses.
-2. **Decide the direction with the AI.** The options were a product-grade tool or a flashy landing page. A product-grade tool fits an SEO company and a 2–4 hour budget better. Then write the plan ([PLAN.md](PLAN.md)) before any code.
-3. **Build in small, verified steps**, checking every view in a headless browser instead of trusting the code.
-4. **Review against the guidelines and Lighthouse, then fix what they found.**
-
-Problems found by verification and fixed along the way:
-
-| Found | Fix |
-|---|---|
-| A constant imported from a `"use client"` module into a server page arrives as a client reference, not a number | Moved shared values to [src/lib/compare.ts](src/lib/compare.ts) |
-| Race between the localStorage provider and the compare page's URL sync: a shared link was overwritten | Rewrote the store with `useSyncExternalStore` |
-| SSGOI's packaged Next.js boundary wraps the page in Suspense, so all HTML streamed hidden. LCP was 4.5s and Performance 84 | A manual pathname boundary. LCP 3.0s, Performance 95 |
-| SSGOI transitions in Firefox: the incoming page painted text first and the rest later, and the motion felt slow (found by manual testing in Firefox) | Dropped SSGOI and replaced it with a 200 ms CSS enter animation that behaves the same in every browser |
-| Favicon 404s in the console and stretched icons | Server-side favicon proxy ([src/app/api/favicon/route.ts](src/app/api/favicon/route.ts)) with a lettered fallback, cached for a day |
-| An "Earlier" month option and months with zero results | Month options built from real counts |
-| A niche stat that said nothing ("WordPress, 5% of top 100") | Replaced with the top site by DR |
-| The command palette crashed on open: the new shadcn `CommandDialog` no longer wraps its children in `<Command>` | Added the wrapper and force-mounted the "Scout this idea" group |
-| The verdict share image returned nothing: Satori needs `display: flex` on any element with several text nodes | Built the line as one string |
-| A focusable chart inside an `aria-hidden` container (Lighthouse `aria-hidden-focus`) | Turned off the recharts keyboard layer. The data stays available in a screen-reader table |
-| The idea form submitted as a plain GET, a full page reload that skipped the scan state and transition | Client-side navigation on submit, with the GET form kept as the no-JavaScript fallback |
-| Unknown startups returned 200 with a "not found" page (a soft 404): the route's loading state started streaming before the page knew | Removed that loading state, so missing startups get a real 404 with `noindex` |
-| axe: muted text at 4.3:1 in light mode, and map tile counts at 3.6:1 | Darker light-mode muted text (6:1 on white) and full-opacity tile counts |
-| The 404 page had no `<h1>`, and `?page=99999` highlighted no page | Added the heading, and clamped the current page to the last one |
-| The single chart hue failed the dataviz palette validator (too gray in light mode, too light in dark mode) | Picked `--chart-bar` steps that pass every check in both themes |
-
-## Not done yet
-
-- **Deploying to Vercel**: next step, the code is ready for it.
-- **Automated browser tests in CI.** The Playwright and axe runs were scripted locally but are not part of the repo or a CI pipeline yet.
-- **Cross-browser pass on real devices.** The navigation animation was measured in Chromium. Firefox, Safari and mobile devices still need a manual check.
-
-## What I would do next
-
-- **Trends over time** once the index has a longer history: niche growth per month and "heating up" niches.
-- **News per startup and niche** from FreeSerp's companion [freenewsapi.ai](https://freenewsapi.ai).
-- **Saved scouts and alerts** when a new competitor appears for your idea.
-- **Semantic matching** of the idea description (embeddings) instead of keyword matching, so long descriptions are not penalised.
+\* Страницы результатов намеренно закрыты от индексации (`noindex`). Страница ниши теряет около 6 баллов Performance из-за библиотеки графиков (recharts).
