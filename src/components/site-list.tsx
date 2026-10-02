@@ -10,12 +10,12 @@ import { getNicheByName } from "@/lib/niches"
 export function SiteFavicon({ domain, size = 32 }: { domain: string; size?: number }) {
   return (
     <Image
-      src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`}
+      src={`/api/favicon?d=${encodeURIComponent(domain)}`}
       alt=""
       width={size}
       height={size}
       unoptimized
-      className="shrink-0 self-start rounded-md border bg-muted"
+      className="shrink-0 self-start rounded-md border bg-muted object-contain"
       style={{ width: size, height: size }}
     />
   )

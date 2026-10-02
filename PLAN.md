@@ -24,7 +24,7 @@ Success criteria for the MVP:
 FreeSerp API, `index=sites` (main pages only), always filtered with `ai_startups=1` to drop noise such as shops and casinos. Data snapshot as of 2026-10-02:
 
 - 33,570 AI startups across 54 sub-niches (`ai_categories`), from "AI Agents & Autonomous" (10.5k) to "Background Removal" (22).
-- Fields used: `domain`, `title`, `ai_summary`, `ai_categories`, `dr`, `went_live`, `first_seen`, `tld`, `ai_source`, `webserver`.
+- Fields used: `domain`, `title`, `ai_summary`, `ai_categories`, `dr`, `went_live`, `tld`, `ai_source`, `webserver`.
 
 Known limitations. We surface these in the UI instead of hiding them:
 
@@ -38,8 +38,9 @@ Known limitations. We surface these in the UI instead of hiding them:
 ```
 /                      Home: idea input, market map, freshly indexed startups
 /scout?q=…             Idea results: verdict, competitors, niche breakdown, filters
+                       (without q: browse all startups, e.g. /scout?niche=legal)
 /niches                All 54 niches: map and sortable table
-/niche/[slug]          One niche: stats and filterable startup list (54 pre-rendered pages)
+/niche/[slug]          One niche: stats, leaders, newest, similar niches (54 pre-rendered pages)
 /site/[domain]         One startup: summary, facts, similar startups
 /compare?d=a,b,c       2–3 startups side by side
 /about                 Data and methodology: how verdicts are computed, limitations
@@ -59,18 +60,19 @@ Known limitations. We surface these in the UI instead of hiding them:
   - Competitive: 200–999
   - Crowded: 1000+
 - Niche breakdown: which `ai_categories` the matching startups fall into. Computed from the result set.
-- Competitor list: cards with domain, title, summary, niches, DR and date. Filters (niche, DR range, date range, TLD, builder), sort (relevance, newest, DR) and pagination.
+- Competitor list: rows with domain, title, summary, niches, DR and date. Filters (niche, DR, indexed month, TLD, builder), sort (best match, newest, oldest, DR) and pagination.
+- Without `q` the same page is the filterable browser for all startups, so niche pages can stay static.
 - "Add to compare" on every card.
 
 ### Niches `/niches` and `/niche/[slug]`
 
 - The index shows the treemap plus a table sorted by size.
-- A niche page shows the startup count, share of all AI startups, top builders and TLDs in the niche, and the filterable list (same filters as Scout, query optional).
+- A niche page shows the startup count and rank, share of all AI startups, top site by DR, the most common domain zone, the 10 leaders by DR, the newest arrivals and niches of a similar size. "Browse and filter" opens `/scout?niche=<slug>`.
 - All 54 pages are generated at build time and revalidated daily (ISR). Each has its own title, description and Open Graph tags. This is programmatic SEO.
 
 ### Site `/site/[domain]`
 
-- The full `ai_summary`, niches, DR, `went_live` and `first_seen`, TLD, builder, web server, and an outbound link.
+- The full `ai_summary`, niches, DR, `went_live`, TLD, builder, web server, and an outbound link. `first_seen` is left out: it is 2025-01-01 for every site.
 - Similar startups: a search by the site's title within its main niche, excluding itself.
 
 ### Compare `/compare?d=`
@@ -91,7 +93,7 @@ The header holds the logo, Scout, Niches, Compare (with a badge showing how many
 - `src/lib/freeserp.ts` is the single typed API client. It sends identification params (`project`) and uses `fetch` caching with `revalidate`. Niche totals are cached for 24 hours.
 - Pages are Server Components that read `searchParams`. Filters are small client components that only update the URL. No client-side data fetching is needed for core flows.
 - Light and dark themes come from `next-themes` and shadcn semantic tokens.
-- Optional: SSGOI page transitions for tile → niche page and card → site page, respecting `prefers-reduced-motion`.
+- SSGOI page transitions (drill) for overview → niche page and list → site profile. They are turned off when `prefers-reduced-motion` is set.
 
 ## SEO
 

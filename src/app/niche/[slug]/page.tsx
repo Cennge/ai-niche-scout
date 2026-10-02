@@ -6,7 +6,7 @@ import { densityBand } from "@/components/market-map"
 import { SiteList } from "@/components/site-list"
 import { Button } from "@/components/ui/button"
 import { getNicheStats, getTotalStartups, searchSites, type Site } from "@/lib/freeserp"
-import { builderLabel, formatNumber } from "@/lib/format"
+import { formatNumber } from "@/lib/format"
 import { getNicheBySlug, NICHES } from "@/lib/niches"
 import { SITE_URL } from "@/lib/site"
 import { cn } from "@/lib/utils"
@@ -48,7 +48,7 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
   return (
     <div className="flex flex-col gap-1 border-l pl-4">
       <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="text-2xl font-semibold tabular-nums">{value}</dd>
+      <dd className="truncate text-2xl font-semibold">{value}</dd>
       {hint && <dd className="text-sm text-muted-foreground">{hint}</dd>}
     </div>
   )
@@ -68,7 +68,7 @@ export default async function NichePage(props: PageProps<"/niche/[slug]">) {
   const index = stats.findIndex((s) => s.slug === slug)
   const count = stats[index]?.total ?? leaders.total
 
-  const builders = topShares(leaders.results, (s) => builderLabel(s.ai_source))
+  const leader = leaders.results[0]
   const zones = topShares(leaders.results, (s) => (s.tld ? `.${s.tld}` : null))
   const neighbours = stats.filter((s) => s.slug !== slug).slice(Math.max(0, index - 3), Math.max(0, index - 3) + 6)
 
@@ -108,9 +108,9 @@ export default async function NichePage(props: PageProps<"/niche/[slug]">) {
           <Stat label="AI startups" value={formatNumber(count)} hint={`Rank ${index + 1} of ${stats.length}`} />
           <Stat label="Share of all AI startups" value={`${((count / total) * 100).toFixed(1)}%`} />
           <Stat
-            label="Most common builder"
-            value={builders[0]?.label ?? "Unknown"}
-            hint={builders[0] ? `${builders[0].share}% of the top 100` : undefined}
+            label="Top site by DR"
+            value={leader?.domain ?? "Unknown"}
+            hint={leader?.dr != null ? `Domain Rating ${leader.dr}` : undefined}
           />
           <Stat
             label="Most common zone"

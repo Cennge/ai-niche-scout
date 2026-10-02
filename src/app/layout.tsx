@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Schibsted_Grotesk } from "next/font/google";
 
+import { PageTransitions } from "@/components/page-transitions";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -57,7 +58,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               Skip to content
             </a>
             <SiteHeader />
-            <main id="content" className="flex flex-1 flex-col">{children}</main>
+            <main id="content" className="relative z-0 flex flex-1 flex-col overflow-x-clip">
+              <PageTransitions>{children}</PageTransitions>
+            </main>
             <SiteFooter />
           </TooltipProvider>
         </ThemeProvider>

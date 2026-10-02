@@ -102,7 +102,7 @@ export default async function AboutPage() {
             <strong>Summaries are machine-written</strong> from each homepage and can be out of date.
           </li>
           <li>
-            <strong>Shares on niche pages</strong> (most common builder and zone) are calculated from the 100
+            <strong>The most common domain zone</strong> on niche pages is calculated from the 100
             highest-rated sites in that niche.
           </li>
         </ul>
