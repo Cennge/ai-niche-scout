@@ -22,6 +22,7 @@
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
+  --color-chart-bar: var(--chart-bar);
   --color-chart-1: var(--chart-1);
   --color-chart-1-foreground: var(--chart-1-foreground);
   --color-chart-2-foreground: var(--chart-2-foreground);
@@ -92,6 +93,8 @@
   --chart-3-foreground: oklch(0.2 0.04 160);
   --chart-4-foreground: oklch(0.99 0 0);
   --chart-5-foreground: oklch(0.99 0 0);
+  /* Single-series bars, validated with the dataviz palette checks. */
+  --chart-bar: oklch(0.52 0.12 160);
 }
 
 .dark {
@@ -131,6 +134,7 @@
   --chart-3-foreground: oklch(0.98 0.01 160);
   --chart-4-foreground: oklch(0.16 0.03 160);
   --chart-5-foreground: oklch(0.16 0.03 160);
+  --chart-bar: oklch(0.66 0.13 160);
 }
 
 @layer base {
@@ -150,3 +154,24 @@
     touch-action: manipulation;
   }
 }
+
+/* Topographic contour lines behind the hero, tinted with the theme accent. */
+@layer components {
+  .contours {
+    background-color: var(--primary);
+    opacity: 0.16;
+    mask-image: url("/contours.svg");
+    mask-repeat: no-repeat;
+    mask-size: max(1200px, 100%) auto;
+    mask-position: right top;
+  }
+  .contours-fade {
+    mask-image: linear-gradient(to right, transparent 5%, #000 55%),
+      linear-gradient(to bottom, #000 70%, transparent);
+    mask-composite: intersect;
+  }
+  .dark .contours {
+    opacity: 0.2;
+  }
+}
+

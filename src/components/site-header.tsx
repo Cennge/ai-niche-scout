@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+import { CommandMenu } from "@/components/command-menu"
 import { ModeToggle } from "@/components/mode-toggle"
 import { SiteNav } from "@/components/site-nav"
 
@@ -24,6 +25,7 @@ export function SiteHeader() {
         </Link>
         <div className="ml-auto flex items-center gap-2">
           <SiteNav />
+          <CommandMenu />
           <ModeToggle />
         </div>
       </div>

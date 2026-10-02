@@ -3,9 +3,10 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { densityBand } from "@/components/market-map"
+import { ColumnChartCard, RankedBarChartCard } from "@/components/niche-charts"
 import { SiteList } from "@/components/site-list"
 import { Button } from "@/components/ui/button"
-import { getNicheStats, getTotalStartups, searchSites, type Site } from "@/lib/freeserp"
+import { getNicheProfile, getNicheStats, getTotalStartups, searchSites } from "@/lib/freeserp"
 import { formatNumber } from "@/lib/format"
 import { getNicheBySlug, NICHES } from "@/lib/niches"
 import { SITE_URL } from "@/lib/site"
@@ -32,18 +33,6 @@ export async function generateMetadata(props: PageProps<"/niche/[slug]">): Promi
   }
 }
 
-function topShares(sites: Site[], pick: (site: Site) => string | null, limit = 4) {
-  const counts = new Map<string, number>()
-  for (const site of sites) {
-    const key = pick(site)
-    if (key) counts.set(key, (counts.get(key) ?? 0) + 1)
-  }
-  return [...counts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, limit)
-    .map(([label, count]) => ({ label, share: Math.round((count / sites.length) * 100) }))
-}
-
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="flex flex-col gap-1 border-l pl-4">
@@ -59,18 +48,21 @@ export default async function NichePage(props: PageProps<"/niche/[slug]">) {
   const niche = getNicheBySlug(slug)
   if (!niche) notFound()
 
-  const [stats, total, leaders, newest] = await Promise.all([
+  const [stats, total, leaders, newest, profile] = await Promise.all([
     getNicheStats(),
     getTotalStartups(),
-    searchSites({ niche: niche.name, sort: "dr", order: "desc", size: 100 }, 86400),
+    searchSites({ niche: niche.name, sort: "dr", order: "desc", size: 10 }, 86400),
     searchSites({ niche: niche.name, sort: "went_live", order: "desc", size: 5 }, 86400),
+    getNicheProfile(niche.name),
   ])
   const index = stats.findIndex((s) => s.slug === slug)
   const count = stats[index]?.total ?? leaders.total
 
   const leader = leaders.results[0]
-  const zones = topShares(leaders.results, (s) => (s.tld ? `.${s.tld}` : null))
-  const neighbours = stats.filter((s) => s.slug !== slug).slice(Math.max(0, index - 3), Math.max(0, index - 3) + 6)
+  const topZone = profile.zones.find((z) => z.label.startsWith("."))
+  const neighbours = stats
+    .filter((s) => s.slug !== slug)
+    .slice(Math.max(0, index - 3), Math.max(0, index - 3) + 6)
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -101,11 +93,17 @@ export default async function NichePage(props: PageProps<"/niche/[slug]">) {
           <span aria-current="page">{niche.name}</span>
         </nav>
         <div className="flex max-w-3xl flex-col gap-3">
-          <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-5xl">{niche.name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-5xl">
+            {niche.name}
+          </h1>
           <p className="text-lg text-muted-foreground">{niche.blurb}</p>
         </div>
         <dl className="grid grid-cols-2 gap-6 md:grid-cols-4">
-          <Stat label="AI startups" value={formatNumber(count)} hint={`Rank ${index + 1} of ${stats.length}`} />
+          <Stat
+            label="AI startups"
+            value={formatNumber(count)}
+            hint={`Rank ${index + 1} of ${stats.length}`}
+          />
           <Stat label="Share of all AI startups" value={`${((count / total) * 100).toFixed(1)}%`} />
           <Stat
             label="Top site by DR"
@@ -114,8 +112,10 @@ export default async function NichePage(props: PageProps<"/niche/[slug]">) {
           />
           <Stat
             label="Most common zone"
-            value={zones[0]?.label ?? "Unknown"}
-            hint={zones[0] ? `${zones[0].share}% of the top 100` : undefined}
+            value={topZone?.label ?? "Unknown"}
+            hint={
+              topZone ? `${Math.round((topZone.count / count) * 100)}% of the niche` : undefined
+            }
           />
         </dl>
         <div className="flex flex-wrap gap-2">
@@ -128,6 +128,37 @@ export default async function NichePage(props: PageProps<"/niche/[slug]">) {
         </div>
       </div>
 
+      <section aria-labelledby="inside-heading" className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <h2 id="inside-heading" className="text-2xl font-semibold tracking-tight">
+            Inside the niche
+          </h2>
+          <p className="text-muted-foreground">
+            Exact counts across all {formatNumber(count)} startups, not a sample.
+          </p>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <ColumnChartCard
+            title="Domain Rating"
+            description={`${Math.round((profile.rated / count) * 100)}% have a rating above 0`}
+            data={profile.dr}
+            total={count}
+          />
+          <RankedBarChartCard
+            title="Domain zones"
+            description="Where the startups register their domains"
+            data={profile.zones}
+            total={count}
+          />
+          <RankedBarChartCard
+            title="Built with"
+            description="Site builder or framework, where detected"
+            data={profile.builders}
+            total={count}
+          />
+        </div>
+      </section>
+
       <section aria-labelledby="leaders-heading" className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
           <h2 id="leaders-heading" className="text-2xl font-semibold tracking-tight">
@@ -135,7 +166,7 @@ export default async function NichePage(props: PageProps<"/niche/[slug]">) {
           </h2>
           <p className="text-muted-foreground">The most established sites in {niche.name}.</p>
         </div>
-        <SiteList sites={leaders.results.slice(0, 10)} />
+        <SiteList sites={leaders.results} />
       </section>
 
       <section aria-labelledby="newest-heading" className="flex flex-col gap-4">
@@ -143,7 +174,9 @@ export default async function NichePage(props: PageProps<"/niche/[slug]">) {
           <h2 id="newest-heading" className="text-2xl font-semibold tracking-tight">
             Recently indexed
           </h2>
-          <p className="text-muted-foreground">New arrivals that FreeSerp confirmed live most recently.</p>
+          <p className="text-muted-foreground">
+            New arrivals that FreeSerp confirmed live most recently.
+          </p>
         </div>
         <SiteList sites={newest.results} />
       </section>
@@ -160,7 +193,10 @@ export default async function NichePage(props: PageProps<"/niche/[slug]">) {
                 className="flex items-center justify-between gap-3 rounded-lg border p-3 hover:bg-muted"
               >
                 <span className="flex items-center gap-2">
-                  <span className={cn("size-3 shrink-0 rounded-sm border", densityBand(n.total).tile)} aria-hidden="true" />
+                  <span
+                    className={cn("size-3 shrink-0 rounded-sm border", densityBand(n.total).tile)}
+                    aria-hidden="true"
+                  />
                   {n.name}
                 </span>
                 <span className="tabular-nums text-muted-foreground">{formatNumber(n.total)}</span>

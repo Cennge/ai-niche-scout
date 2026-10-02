@@ -12,6 +12,7 @@ import { maxPage, parseFilters, toSearchParams } from "@/lib/filters"
 import { getIndexedMonths, searchSites } from "@/lib/freeserp"
 import { pluralize } from "@/lib/format"
 import { getNicheBySlug } from "@/lib/niches"
+import { OG_SIZE } from "@/lib/og"
 
 export async function generateMetadata(props: PageProps<"/scout">): Promise<Metadata> {
   const filters = parseFilters(await props.searchParams)
@@ -26,6 +27,9 @@ export async function generateMetadata(props: PageProps<"/scout">): Promise<Meta
     description: q
       ? `AI startups that already build “${q}”, with a verdict on how crowded the niche is.`
       : "Search and filter 33,000+ AI startups by niche, Domain Rating, domain zone and builder.",
+    openGraph: q
+      ? { images: [{ url: `/api/og?q=${encodeURIComponent(q)}`, ...OG_SIZE }] }
+      : undefined,
     // Result pages are endless permutations: keep them out of the index, follow the links.
     robots: { index: false, follow: true },
   }
@@ -52,13 +56,13 @@ export default async function ScoutPage(props: PageProps<"/scout">) {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6">
       <div className="flex flex-col gap-4">
-        <IdeaForm defaultValue={filters.q} size="default" />
+        <IdeaForm key={filters.q ?? ""} defaultValue={filters.q} size="default" />
         <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">{heading}</h1>
       </div>
 
       {sample && (
         <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
-          <VerdictPanel total={sample.total} sample={sample.results} />
+          <VerdictPanel query={filters.q!} total={sample.total} sample={sample.results} />
           <NicheBreakdown sample={sample.results} />
         </div>
       )}

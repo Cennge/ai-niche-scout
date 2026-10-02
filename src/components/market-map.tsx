@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import type { NicheStat } from "@/lib/freeserp"
 import { formatNumber } from "@/lib/format"
 import { squarify } from "@/lib/treemap"
@@ -18,15 +19,60 @@ export function densityBand(total: number) {
   return DENSITY_BANDS.find((band) => total < band.max) ?? DENSITY_BANDS[DENSITY_BANDS.length - 1]
 }
 
+function NichePreview({ niche, totalStartups }: { niche: NicheStat; totalStartups: number }) {
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1">
+        <p className="font-semibold">{niche.name}</p>
+        <p className="text-sm text-muted-foreground">{niche.blurb}</p>
+      </div>
+      <dl className="grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <dt className="text-muted-foreground">Startups</dt>
+          <dd className="font-medium">{formatNumber(niche.total)}</dd>
+        </div>
+        <div>
+          <dt className="text-muted-foreground">Share of all</dt>
+          <dd className="font-medium">
+            {((niche.total / totalStartups) * 100).toFixed(1)}%
+          </dd>
+        </div>
+      </dl>
+      {niche.leaders.length > 0 && (
+        <div className="flex flex-col gap-1.5 border-t pt-3 text-sm">
+          <p className="text-muted-foreground">Leaders by Domain Rating</p>
+          <ul className="flex flex-col gap-1">
+            {niche.leaders.map((leader) => (
+              <li key={leader.domain} className="flex items-center justify-between gap-3">
+                <span translate="no" className="truncate">
+                  {leader.domain}
+                </span>
+                <span className="shrink-0 text-muted-foreground tabular-nums">
+                  {leader.dr != null ? `DR ${leader.dr}` : "No DR"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function TreemapLayout({
   stats,
+  totalStartups,
   width,
   height,
+  previews = false,
   className,
 }: {
   stats: NicheStat[]
+  totalStartups: number
   width: number
   height: number
+  // Hover previews only make sense with a pointer, so the mobile layout skips them.
+  previews?: boolean
   className?: string
 }) {
   const tiles = squarify(stats, (s) => s.total, width, height)
@@ -47,35 +93,71 @@ function TreemapLayout({
             height: `${(h / height) * 100}%`,
           }}
         >
-          <Link
-            href={`/niche/${item.slug}`}
-            title={`${item.name}: ${formatNumber(item.total)} startups`}
-            className={cn(
-              "@container flex size-full flex-col justify-between overflow-hidden rounded-[3px] p-1.5 outline-none transition-[filter] hover:brightness-110 focus-visible:z-10 focus-visible:ring-3 focus-visible:ring-ring",
-              densityBand(item.total).tile,
-            )}
-          >
-            <span className="hidden text-xs leading-tight font-medium @min-[4.5rem]:line-clamp-3 @min-[9rem]:text-sm">
-              {item.name}
-            </span>
-            <span className="hidden text-xs opacity-80 @min-[4.5rem]:block">
-              {formatNumber(item.total)}
-            </span>
-            <span className="sr-only">
-              {item.name}, {formatNumber(item.total)} startups
-            </span>
-          </Link>
+          <TileLink item={item} totalStartups={totalStartups} previews={previews} />
         </li>
       ))}
     </ul>
   )
 }
 
-export function MarketMap({ stats }: { stats: NicheStat[] }) {
+function TileLink({
+  item,
+  totalStartups,
+  previews,
+}: {
+  item: NicheStat
+  totalStartups: number
+  previews: boolean
+}) {
+  const link = (
+    <Link
+      href={`/niche/${item.slug}`}
+      className={cn(
+        "@container flex size-full flex-col justify-between overflow-hidden rounded-[3px] p-1.5 outline-none transition-[filter] hover:brightness-110 focus-visible:z-10 focus-visible:ring-3 focus-visible:ring-ring",
+        densityBand(item.total).tile,
+      )}
+    >
+      <span className="hidden text-xs leading-tight font-medium @min-[4.5rem]:line-clamp-3 @min-[9rem]:text-sm">
+        {item.name}
+      </span>
+      <span className="hidden text-xs opacity-80 @min-[4.5rem]:block">
+        {formatNumber(item.total)}
+      </span>
+      <span className="sr-only">
+        {item.name}, {formatNumber(item.total)} startups
+      </span>
+    </Link>
+  )
+  if (!previews) return link
+
+  return (
+    <HoverCard openDelay={120} closeDelay={60}>
+      <HoverCardTrigger asChild>{link}</HoverCardTrigger>
+      <HoverCardContent className="w-72" side="top">
+        <NichePreview niche={item} totalStartups={totalStartups} />
+      </HoverCardContent>
+    </HoverCard>
+  )
+}
+
+export function MarketMap({ stats, totalStartups }: { stats: NicheStat[]; totalStartups: number }) {
   return (
     <figure className="flex flex-col gap-3">
-      <TreemapLayout stats={stats} width={1200} height={620} className="hidden sm:block" />
-      <TreemapLayout stats={stats} width={360} height={560} className="sm:hidden" />
+      <TreemapLayout
+        stats={stats}
+        totalStartups={totalStartups}
+        width={1200}
+        height={620}
+        previews
+        className="hidden sm:block"
+      />
+      <TreemapLayout
+        stats={stats}
+        totalStartups={totalStartups}
+        width={360}
+        height={560}
+        className="sm:hidden"
+      />
       <figcaption className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
         <span>Startups per niche</span>
         <ul className="flex flex-wrap gap-x-3 gap-y-1">

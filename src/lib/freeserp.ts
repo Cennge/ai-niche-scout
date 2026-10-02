@@ -3,7 +3,7 @@ import "server-only"
 import { cache } from "react"
 
 import { monthRange, recentMonths } from "@/lib/filter-options"
-import { formatNumber } from "@/lib/format"
+import { BUILDERS, formatNumber } from "@/lib/format"
 import { NICHES, type Niche } from "@/lib/niches"
 
 // Typed client for the FreeSerp sites index (https://freeserp.ai/docs.php).
@@ -54,6 +54,22 @@ export type SearchParams = {
 
 export class FreeSerpError extends Error {}
 
+// FreeSerp is free and has no hard rate limit; a build renders 54 niche pages with ~25
+// requests each, so cap concurrency to stay a polite client.
+const MAX_CONCURRENT = 12
+let active = 0
+const waiting: (() => void)[] = []
+
+async function acquire() {
+  if (active >= MAX_CONCURRENT) await new Promise<void>((resolve) => waiting.push(resolve))
+  active++
+}
+
+function release() {
+  active--
+  waiting.shift()?.()
+}
+
 async function request(
   params: Record<string, string | number | undefined>,
   revalidate: number,
@@ -66,10 +82,13 @@ async function request(
   }
 
   let res: Response
+  await acquire()
   try {
     res = await fetch(url, { next: { revalidate } })
   } catch {
     throw new FreeSerpError("FreeSerp is unreachable. Check your connection and try again.")
+  } finally {
+    release()
   }
   const data = await res.json().catch(() => null)
   if (!res.ok || !data?.ok) {
@@ -104,18 +123,89 @@ export const getSite = cache(async (domain: string): Promise<Site | null> => {
   return results.find((site) => site.domain === domain) ?? null
 })
 
-export type NicheStat = Niche & { total: number }
+export type NicheLeader = { domain: string; dr: number | null }
+export type NicheStat = Niche & { total: number; leaders: NicheLeader[] }
 
-/** Startup count for every niche, largest first. One request per niche, cached for a day. */
+/** Count and top 3 sites by DR for every niche, largest first. Cached for a day. */
 export const getNicheStats = cache(async (): Promise<NicheStat[]> => {
   const stats = await Promise.all(
     NICHES.map(async (niche) => {
-      const { total } = await request({ ai_categories: niche.name, size: 1 }, 86400)
-      return { ...niche, total }
+      const { total, results } = await request(
+        { ai_categories: niche.name, sort: "dr", order: "desc", size: 3 },
+        86400,
+      )
+      const leaders = results.map((site) => ({ domain: site.domain, dr: site.dr }))
+      return { ...niche, total, leaders }
     }),
   )
   return stats.sort((a, b) => b.total - a.total)
 })
+
+export type Bucket = { label: string; count: number }
+
+const DR_BANDS: { label: string; min: number; max?: number }[] = [
+  { label: "1–19", min: 1, max: 19 },
+  { label: "20–39", min: 20, max: 39 },
+  { label: "40–59", min: 40, max: 59 },
+  { label: "60+", min: 60 },
+]
+const ZONES = ["com", "ai", "io", "co", "app", "dev", "net", "org", "tech"]
+
+async function count(params: Record<string, string | number | undefined>) {
+  const { total } = await request({ ...params, size: 1 }, 86400)
+  return total
+}
+
+function withRemainder(buckets: Bucket[], total: number, label: string) {
+  const rest = total - buckets.reduce((sum, b) => sum + b.count, 0)
+  return rest > 0 ? [...buckets, { label, count: rest }] : buckets
+}
+
+/** Exact distributions for one niche, counted by the API (not sampled). Cached for a day. */
+export const getNicheProfile = cache(async (niche: string) => {
+  const base = { ai_categories: niche }
+  const [total, rated, drBands, zones, builders] = await Promise.all([
+    count(base),
+    count({ ...base, dr_min: 1 }),
+    Promise.all(
+      DR_BANDS.map(async (b) => ({
+        label: b.label,
+        count: await count({ ...base, dr_min: b.min, dr_max: b.max }),
+      })),
+    ),
+    Promise.all(
+      ZONES.map(async (tld) => ({ label: `.${tld}`, count: await count({ ...base, tld }) })),
+    ),
+    Promise.all(
+      Object.entries(BUILDERS).map(async ([source, label]) => ({
+        label,
+        count: await count({ ...base, ai_source: source }),
+      })),
+    ),
+  ])
+
+  const byCount = (a: Bucket, b: Bucket) => b.count - a.count
+  return {
+    total,
+    rated,
+    dr: [{ label: "0 / not rated", count: total - rated }, ...drBands],
+    zones: withRemainder(
+      zones
+        .filter((z) => z.count > 0)
+        .sort(byCount)
+        .slice(0, 6),
+      total,
+      "Other zones",
+    ),
+    builders: withRemainder(
+      builders.filter((b) => b.count > 0).sort(byCount),
+      total,
+      "Other or unknown",
+    ),
+  }
+})
+
+export type NicheProfile = Awaited<ReturnType<typeof getNicheProfile>>
 
 export const getTotalStartups = cache(async () => {
   const { total } = await request({ size: 1 }, 86400)

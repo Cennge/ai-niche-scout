@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Schibsted_Grotesk } from "next/font/google";
 
+import { CompareBar } from "@/components/compare-bar";
 import { PageTransitions } from "@/components/page-transitions";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
@@ -62,6 +64,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <PageTransitions>{children}</PageTransitions>
             </main>
             <SiteFooter />
+            <CompareBar />
+            <Toaster position="top-center" />
           </TooltipProvider>
         </ThemeProvider>
       </body>

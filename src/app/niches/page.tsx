@@ -36,7 +36,7 @@ export default async function NichesPage() {
         </p>
       </div>
 
-      <MarketMap stats={stats} />
+      <MarketMap stats={stats} totalStartups={total} />
 
       <Table>
         <TableHeader>

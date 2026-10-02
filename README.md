@@ -14,10 +14,10 @@
 
 | Page | What you get |
 |---|---|
-| `/` | Idea search, a treemap of all 54 AI niches sized by startup count, and recently indexed startups |
-| `/scout?q=…` | A verdict on the idea (Open field, Emerging, Competitive or Crowded), where the competitors cluster by niche, the most established players, and the full competitor list with 6 filters, sorting and pagination |
+| `/` | Idea search with niche suggestions, a treemap of all 54 AI niches sized by startup count (hover a tile for its share and top 3 sites), and recently indexed startups |
+| `/scout?q=…` | A verdict on the idea (Open field, Emerging, Competitive or Crowded), where the competitors cluster by niche, the most established players, a share button, and the full competitor list with 6 filters, sorting and pagination |
 | `/niches` | The market map and a ranked table of all niches |
-| `/niche/[slug]` | 54 pre-rendered niche pages: size, rank, share, top site, leaders by Domain Rating, newest arrivals, niches of a similar size |
+| `/niche/[slug]` | 54 pre-rendered niche pages: size, rank, share, top site, charts of Domain Rating, domain zones and site builders (exact counts), leaders by Domain Rating, newest arrivals, niches of a similar size |
 | `/site/[domain]` | A startup profile with similar startups |
 | `/compare?d=a,b,c` | Up to three startups side by side. The link is shareable |
 | `/about` | Data source, how verdicts are calculated, known limits |
@@ -25,6 +25,10 @@
 Other details:
 
 - **Light, dark and system themes**, without a flash on load.
+- **Search everywhere:** a command palette (Ctrl/⌘ K or `/`) to scout an idea, jump to any of the 54 niches or a page, or switch the theme.
+- **Compare from anywhere:** a floating bar shows the selection, and toasts confirm every add and remove.
+- **Share a verdict:** native share sheet on mobile, copy link elsewhere. Every shared link gets its own Open Graph image with the verdict, and each niche page has one with its size and rank.
+- **Brand details:** topographic contour lines behind the hero (generated once into [public/contours.svg](public/contours.svg)), a custom icon, and a footer that links the most popular niches.
 - **Every view lives in the URL**, so any state can be shared: filters, sort, page and the compare selection.
 - **SEO:**
   - per-page metadata and canonical URLs;
@@ -40,7 +44,8 @@ All calls go through one typed server-side client, [src/lib/freeserp.ts](src/lib
 | Feature | Request |
 |---|---|
 | Idea verdict and niche breakdown | `q=<idea>&size=100`. The verdict is based on `total`, the breakdown counts `ai_categories` across the top 100 matches |
-| Market map and niche counts | `ai_categories=<niche>&size=1` for each of the 54 niches. The API has no facet endpoint, so counts are fetched in parallel and cached for a day |
+| Market map, niche counts and hover previews | `ai_categories=<niche>&sort=dr&size=3` for each of the 54 niches: `total` sizes the tile, the results are the top 3 sites. The API has no facet endpoint, so these run in parallel and are cached for a day |
+| Niche charts | Exact counts, one `size=1` request per bar: `dr_min`/`dr_max` bands, `tld` per zone, `ai_source` per builder. About 25 requests per niche, cached for a day. A concurrency cap of 12 keeps a full build polite |
 | Filters | `ai_categories`, `dr_min`, `from_date`/`to_date`, `tld`, `ai_source`, `sort=went_live\|dr` with `order`, `from`/`size` |
 | "Indexed" month filter | One `from_date`/`to_date` count per recent month. Only months that contain data are offered, for example "August 2026 (32,890)" |
 | Niche leaders and newest | `ai_categories=<niche>&sort=dr` and `sort=went_live` |
@@ -80,11 +85,11 @@ No API key or environment variables are needed. The optional `NEXT_PUBLIC_SITE_U
 
 | Page | Performance | Accessibility | Best practices | SEO |
 |---|---|---|---|---|
-| `/` | 95 | 97 | 100 | 100 |
-| `/niche/legal` | 95 | 100 | 100 | 100 |
+| `/` | 92 | 97 | 100 | 100 |
+| `/niche/legal` | 86 | 100 | 100 | 100 |
 | `/scout?q=AI receptionist` | 92 | 100 | 100 | 66* |
 
-\* Scout result pages are `noindex` on purpose. The remaining accessibility note on `/` is the small tiles of the smallest niches on the map. Their area is honest by design, and every niche is also reachable from the table on `/niches`.
+\* Scout result pages are `noindex` on purpose. Niche pages pay about 6 points of Performance for the charts library (recharts). The remaining accessibility note on `/` is the small tiles of the smallest niches on the map. Their area is honest by design, and every niche is also reachable from the table on `/niches`.
 
 ## How I worked with AI
 
@@ -118,6 +123,10 @@ Problems found by verification and fixed along the way:
 | Favicon 404s in the console and stretched icons | Server-side favicon proxy ([src/app/api/favicon/route.ts](src/app/api/favicon/route.ts)) with a lettered fallback, cached for a day |
 | An "Earlier" month option and months with zero results | Month options built from real counts |
 | A niche stat that said nothing ("WordPress, 5% of top 100") | Replaced with the top site by DR |
+| The command palette crashed on open: the new shadcn `CommandDialog` no longer wraps its children in `<Command>` | Added the wrapper and force-mounted the "Scout this idea" group |
+| The verdict share image returned nothing: Satori needs `display: flex` on any element with several text nodes | Built the line as one string |
+| A focusable chart inside an `aria-hidden` container (Lighthouse `aria-hidden-focus`) | Turned off the recharts keyboard layer. The data stays available in a screen-reader table |
+| The single chart hue failed the dataviz palette validator (too gray in light mode, too light in dark mode) | Picked `--chart-bar` steps that pass every check in both themes |
 
 ## Not done yet
 

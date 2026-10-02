@@ -14,7 +14,15 @@ export const metadata: Metadata = {
   alternates: { canonical: "/about" },
 }
 
-function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
+function Section({
+  id,
+  title,
+  children,
+}: {
+  id: string
+  title: string
+  children: React.ReactNode
+}) {
   return (
     <section aria-labelledby={id} className="flex flex-col gap-3">
       <h2 id={id} className="text-2xl font-semibold tracking-tight">
@@ -36,33 +44,36 @@ export default async function AboutPage() {
       <div className="flex flex-col gap-3">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">About the data</h1>
         <p className="text-lg text-muted-foreground">
-          AI Niche Scout is a thin, honest layer over a public dataset. Here is what it can and cannot
-          tell you.
+          AI Niche Scout is a thin, honest layer over a public dataset. Here is what it can and
+          cannot tell you.
         </p>
       </div>
 
       <Section id="source" title="Where the data comes from">
         <p>
           Every number on this site comes from the{" "}
-          <a href="https://freeserp.ai/docs.php" className="underline underline-offset-4 hover:text-foreground">
+          <a
+            href="https://freeserp.ai/docs.php"
+            className="underline underline-offset-4 hover:text-foreground"
+          >
             FreeSerp API
           </a>
           , a free search index of website homepages. We use its sites index and keep only{" "}
-          <strong>genuine AI products</strong> (the <code>ai_startups</code> filter), which removes shops,
-          casinos and directories that merely mention AI. That leaves{" "}
+          <strong>genuine AI products</strong> (the <code>ai_startups</code> filter), which removes
+          shops, casinos and directories that merely mention AI. That leaves{" "}
           <strong>{formatNumber(total)} AI startups</strong>.
         </p>
         <p>
-          For each site FreeSerp stores a short summary written by a language model, one or more of 54 AI
-          niches, a Domain Rating from 0 to 100, the domain zone, the technology it is built with and the
-          date it was confirmed live.
+          For each site FreeSerp stores a short summary written by a language model, one or more of
+          54 AI niches, a Domain Rating from 0 to 100, the domain zone, the technology it is built
+          with and the date it was confirmed live.
         </p>
       </Section>
 
       <Section id="verdict" title="How the verdict works">
         <p>
-          When you scout an idea, we search summaries, titles and homepage text for your words and count
-          the AI startups that match. The count maps to a verdict:
+          When you scout an idea, we search summaries, titles and homepage text for your words and
+          count the AI startups that match. The count maps to a verdict:
         </p>
         <ul className="flex flex-col gap-2">
           {ascending.map((v, i) => {
@@ -78,40 +89,43 @@ export default async function AboutPage() {
           })}
         </ul>
         <p>
-          The search matches all of your words, so a long, specific description finds fewer sites than a
-          short one. Scout the core of the idea first, then narrow it down.
+          The search matches all of your words, so a long, specific description finds fewer sites
+          than a short one. Scout the core of the idea first, then narrow it down.
         </p>
       </Section>
 
       <Section id="limits" title="Known limits">
         <ul className="flex list-disc flex-col gap-2 pl-5">
           <li>
-            <strong>“Indexed” is not a launch date.</strong> It is the day FreeSerp first
-            confirmed the site was live. Most profiles were added in August 2026, so many older companies
-            show a recent date.
+            <strong>“Indexed” is not a launch date.</strong> It is the day FreeSerp first confirmed
+            the site was live. Most profiles were added in August 2026, so many older companies show
+            a recent date.
           </li>
           <li>
-            <strong>Most new startups have no Domain Rating yet.</strong> Sorting by DR favours established
-            sites. Use it to find leaders, not newcomers.
+            <strong>Most new startups have no Domain Rating yet.</strong> Sorting by DR favours
+            established sites. Use it to find leaders, not newcomers.
           </li>
           <li>
-            <strong>Niches overlap.</strong> A startup can sit in several niches, so niche counts add up to
-            more than the total.
+            <strong>Niches overlap.</strong> A startup can sit in several niches, so niche counts
+            add up to more than the total.
           </li>
           <li>
-            <strong>Summaries are machine-written</strong> from each homepage and can be out of date.
+            <strong>Summaries are machine-written</strong> from each homepage and can be out of
+            date.
           </li>
           <li>
-            <strong>The most common domain zone</strong> on niche pages is calculated from the 100
-            highest-rated sites in that niche.
+            <strong>Charts on niche pages are exact counts</strong> from the API, not samples.
+            Domain Rating 0 and missing ratings are shown together, because the index stores most
+            unrated sites as 0.
           </li>
         </ul>
       </Section>
 
       <Section id="freshness" title="How fresh it is">
         <p>
-          Niche counts are cached for a day, search results for an hour. The 54 niche pages are generated
-          ahead of time and refreshed daily, so they load instantly and search engines can index them.
+          Niche counts are cached for a day, search results for an hour. The 54 niche pages are
+          generated ahead of time and refreshed daily, so they load instantly and search engines can
+          index them.
         </p>
         <p>
           <Link href="/niches" className="underline underline-offset-4 hover:text-foreground">
