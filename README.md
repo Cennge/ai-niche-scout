@@ -78,25 +78,52 @@ npm install
 npm run dev          # http://localhost:3000
 ```
 
-Production build:
+Production build and tests:
 
 ```bash
 npm run build && npm start
+npm test             # unit tests (vitest)
+npm run lint
 ```
 
 No API key or environment variables are needed. The optional `NEXT_PUBLIC_SITE_URL` sets the canonical domain. On Vercel it is detected automatically.
 
 ## Quality checks
 
-- `npm run lint` and `npm run build` pass, including the TypeScript check.
-- Every route was checked in a real browser (Playwright) in light and dark themes, at desktop width and at a 390px mobile width. The compare flow was tested end to end: add, badge, URL sync, shared link, removal.
+- `npm run lint`, `npm run build` (including the TypeScript check) and `npm test` pass.
+- **38 unit tests** ([test/](test/)) cover the pure logic:
+  - the treemap: areas proportional to values, no overlaps, inside the canvas;
+  - verdict thresholds;
+  - URL filter parsing, including hostile values such as `dr=abc`, `page=-5` and `page=99999`;
+  - month ranges with leap years;
+  - formatting;
+  - the niche list.
+- **Edge cases checked by hand against the production build:**
+  - XSS in the query is escaped;
+  - unknown niches and startups return a real 404 with `noindex`, not a soft 404;
+  - duplicate or extra compare domains are dropped;
+  - malformed filters are ignored;
+  - the favicon proxy rejects anything that is not a domain.
+- **Browser tests (Playwright + axe-core)** on every page, in light and dark themes, at 1280px and 375px:
+  - no accessibility violations, including colour contrast;
+  - no horizontal scroll;
+  - no console errors.
+- **Keyboard and flows:**
+  - the skip link and a visible focus ring on every control;
+  - the `/` and Ctrl/⌘ K palette;
+  - the search combobox with arrows and Enter;
+  - the mobile menu;
+  - the compare flow end to end: add, fly-in, bar, URL sync, shared link, removal;
+  - filters restored from the URL;
+  - every motion effect measured frame by frame.
 - Lighthouse, mobile preset, production build on localhost:
 
 | Page | Performance | Accessibility | Best practices | SEO |
 |---|---|---|---|---|
 | `/` | 92 | 100 | 100 | 100 |
 | `/niche/legal` | 86 | 100 | 100 | 100 |
-| `/scout?q=AI receptionist` | 90 | 100 | 100 | 66* |
+| `/site/goodcall.com` | 93 | 100 | 100 | 100 |
+| `/scout?q=AI receptionist` | 89 | 100 | 100 | 66* |
 
 \* Scout result pages are `noindex` on purpose. Niche pages pay about 6 points of Performance for the charts library (recharts).
 
@@ -136,14 +163,16 @@ Problems found by verification and fixed along the way:
 | The verdict share image returned nothing: Satori needs `display: flex` on any element with several text nodes | Built the line as one string |
 | A focusable chart inside an `aria-hidden` container (Lighthouse `aria-hidden-focus`) | Turned off the recharts keyboard layer. The data stays available in a screen-reader table |
 | The idea form submitted as a plain GET, a full page reload that skipped the scan state and transition | Client-side navigation on submit, with the GET form kept as the no-JavaScript fallback |
+| Unknown startups returned 200 with a "not found" page (a soft 404): the route's loading state started streaming before the page knew | Removed that loading state, so missing startups get a real 404 with `noindex` |
+| axe: muted text at 4.3:1 in light mode, and map tile counts at 3.6:1 | Darker light-mode muted text (6:1 on white) and full-opacity tile counts |
+| The 404 page had no `<h1>`, and `?page=99999` highlighted no page | Added the heading, and clamped the current page to the last one |
 | The single chart hue failed the dataviz palette validator (too gray in light mode, too light in dark mode) | Picked `--chart-bar` steps that pass every check in both themes |
 
 ## Not done yet
 
 - **Deploying to Vercel**: next step, the code is ready for it.
-- **Automated tests.** Verification was manual in the browser. Unit tests for the treemap, verdict and filter parsing would be the first to add.
+- **Automated browser tests in CI.** The Playwright and axe runs were scripted locally but are not part of the repo or a CI pipeline yet.
 - **Cross-browser pass on real devices.** The navigation animation was measured in Chromium. Firefox, Safari and mobile devices still need a manual check.
-- **Open Graph images** per niche.
 
 ## What I would do next
 
@@ -151,4 +180,3 @@ Problems found by verification and fixed along the way:
 - **News per startup and niche** from FreeSerp's companion [freenewsapi.ai](https://freenewsapi.ai).
 - **Saved scouts and alerts** when a new competitor appears for your idea.
 - **Semantic matching** of the idea description (embeddings) instead of keyword matching, so long descriptions are not penalised.
-- **A shareable verdict card** (OG image) for each scouted idea.

@@ -122,7 +122,7 @@ function TileLink({
       <span className="hidden text-xs leading-tight font-medium @min-[4.5rem]:line-clamp-3 @min-[9rem]:text-sm">
         {item.name}
       </span>
-      <span className="hidden text-xs opacity-80 @min-[4.5rem]:block">
+      <span className="hidden text-xs @min-[4.5rem]:block">
         {formatNumber(item.total)}
       </span>
       <span className="sr-only">

@@ -32,7 +32,7 @@ Read `PLAN.md` before starting any feature: it is the source of truth for pages,
 
 ## Done means
 
-- `npm run lint` and `npm run build` pass.
+- `npm run lint`, `npm test` and `npm run build` pass.
 - The view has been checked in the browser in both themes and at mobile width.
 
 ## Git

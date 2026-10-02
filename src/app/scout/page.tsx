@@ -103,7 +103,7 @@ export default async function ScoutPage(props: PageProps<"/scout">) {
             <ResultsPagination
               pathname="/scout"
               searchParams={raw}
-              page={filters.page}
+              page={Math.min(filters.page, maxPage(list.total))}
               lastPage={maxPage(list.total)}
             />
           </ResultsRegion>

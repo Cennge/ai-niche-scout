@@ -19,7 +19,9 @@ export default function NotFound() {
           <EmptyMedia variant="icon">
             <MapPinOff />
           </EmptyMedia>
-          <EmptyTitle>This page is not on the map</EmptyTitle>
+          <EmptyTitle>
+            <h1>This page is not on the map</h1>
+          </EmptyTitle>
           <EmptyDescription>
             The startup or niche you are looking for is not in the FreeSerp AI index.
           </EmptyDescription>
