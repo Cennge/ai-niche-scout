@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 
 import { ExampleIdeas, IdeaForm } from "@/components/idea-form"
@@ -8,6 +9,10 @@ import { getNicheStats, getTotalStartups, searchSites } from "@/lib/freeserp"
 import { formatNumber } from "@/lib/format"
 
 export const revalidate = 3600
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+}
 
 export default async function Home() {
   const [total, stats, fresh] = await Promise.all([

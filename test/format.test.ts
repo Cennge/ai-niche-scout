@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { builderLabel, formatDate, formatNumber, pluralize } from "@/lib/format"
+import { builderLabel, clampText, formatDate, formatNumber, pluralize } from "@/lib/format"
 import { compareHref } from "@/lib/compare"
 import { getNicheByName, getNicheBySlug, NICHES } from "@/lib/niches"
 
@@ -47,5 +47,22 @@ describe("niches", () => {
     expect(getNicheBySlug("legal")?.name).toBe("Legal")
     expect(getNicheByName("Legal")?.slug).toBe("legal")
     expect(getNicheBySlug("nope")).toBeUndefined()
+  })
+})
+
+describe("clampText", () => {
+  it("keeps short text as is and collapses whitespace", () => {
+    expect(clampText("  Short   title ", 40)).toBe("Short title")
+  })
+
+  it("cuts long text at a word boundary within the limit", () => {
+    const out = clampText("Goodcall is a Voice AI platform that provides agentic voice AI solutions", 40)
+    expect(out.length).toBeLessThanOrEqual(40)
+    expect(out.endsWith("…")).toBe(true)
+    expect(out).toBe("Goodcall is a Voice AI platform that…")
+  })
+
+  it("drops trailing separators before the ellipsis", () => {
+    expect(clampText("Legal tools, contracts, compliance and more", 24)).toBe("Legal tools, contracts…")
   })
 })

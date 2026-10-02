@@ -7,7 +7,7 @@ import { CompareToggle } from "@/components/compare-toggle"
 import { NicheBadges, SiteFavicon, SiteList } from "@/components/site-list"
 import { Button } from "@/components/ui/button"
 import { getSite, searchSites } from "@/lib/freeserp"
-import { builderLabel, formatDate } from "@/lib/format"
+import { builderLabel, clampText, formatDate } from "@/lib/format"
 import { getNicheByName } from "@/lib/niches"
 
 export const revalidate = 86400
@@ -19,11 +19,26 @@ function normalize(raw: string) {
 export async function generateMetadata(props: PageProps<"/site/[domain]">): Promise<Metadata> {
   const domain = normalize((await props.params).domain)
   const site = await getSite(domain)
-  if (!site) return { title: "Startup not found" }
+  // Unknown startups get a real 404 (with noindex) before any metadata is built.
+  if (!site) notFound()
+  // Prefer the descriptive part of the page title over a repeat of the brand name.
+  // " | AI Niche Scout" adds 17 characters, so keep this part within 48.
+  const brand = site.domain.split(".")[0].toLowerCase()
+  const segments = (site.title ?? "")
+    .split(/\s[|–—-]\s/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+  const headline =
+    segments.find(
+      (part) => part.toLowerCase().replace(/[^a-z0-9]/g, "") !== brand.replace(/[^a-z0-9]/g, ""),
+    ) ?? segments[0]
+  const title = clampText(headline ? `${site.domain}: ${headline}` : site.domain, 48)
+  const description = clampText(site.ai_summary ?? `Profile of ${site.domain}, an AI startup.`, 160)
   return {
-    title: `${site.domain}: ${site.title ?? "AI startup profile"}`,
-    description: site.ai_summary?.slice(0, 160) ?? `Profile of ${site.domain}, an AI startup.`,
+    title,
+    description,
     alternates: { canonical: `/site/${site.domain}` },
+    openGraph: { title, description, url: `/site/${site.domain}`, images: ["/opengraph-image"] },
   }
 }
 
@@ -56,11 +71,15 @@ export default async function SitePage(props: PageProps<"/site/[domain]">) {
           <div className="flex items-center gap-4">
             <SiteFavicon domain={site.domain} size={48} />
             <div className="flex min-w-0 flex-col">
-              <h1 translate="no" className="truncate text-3xl font-bold tracking-tight sm:text-4xl">{site.domain}</h1>
+              <h1 translate="no" className="truncate text-3xl font-bold tracking-tight sm:text-4xl">
+                {site.domain}
+              </h1>
               {site.title && <p className="text-muted-foreground">{site.title}</p>}
             </div>
           </div>
-          {site.ai_summary && <p className="max-w-prose text-lg leading-relaxed">{site.ai_summary}</p>}
+          {site.ai_summary && (
+            <p className="max-w-prose text-lg leading-relaxed">{site.ai_summary}</p>
+          )}
           <NicheBadges categories={site.ai_categories} />
           <div className="flex flex-wrap gap-2">
             <Button asChild>

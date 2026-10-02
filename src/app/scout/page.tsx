@@ -11,7 +11,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/
 import { NicheBreakdown, VerdictPanel } from "@/components/verdict-panel"
 import { maxPage, parseFilters, toSearchParams } from "@/lib/filters"
 import { getIndexedMonths, searchSites } from "@/lib/freeserp"
-import { pluralize } from "@/lib/format"
+import { clampText, pluralize } from "@/lib/format"
 import { getNicheBySlug } from "@/lib/niches"
 import { OG_SIZE } from "@/lib/og"
 
@@ -19,18 +19,25 @@ export async function generateMetadata(props: PageProps<"/scout">): Promise<Meta
   const filters = parseFilters(await props.searchParams)
   const q = filters.q
   const niche = filters.niche ? getNicheBySlug(filters.niche)?.name : undefined
+  const title = q
+    ? `Competitors for “${clampText(q, 40)}”`
+    : niche
+      ? `Browse AI startups in ${niche}`
+      : "Browse AI startups"
+  const description = q
+    ? clampText(
+        `AI startups that already build “${q}”, with a verdict on how crowded the niche is.`,
+        160,
+      )
+    : "Search and filter 33,000+ AI startups by niche, Domain Rating, domain zone and builder."
   return {
-    title: q
-      ? `Competitors for “${q}”`
-      : niche
-        ? `Browse AI startups in ${niche}`
-        : "Browse AI startups",
-    description: q
-      ? `AI startups that already build “${q}”, with a verdict on how crowded the niche is.`
-      : "Search and filter 33,000+ AI startups by niche, Domain Rating, domain zone and builder.",
-    openGraph: q
-      ? { images: [{ url: `/api/og?q=${encodeURIComponent(q)}`, ...OG_SIZE }] }
-      : undefined,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [{ url: q ? `/api/og?q=${encodeURIComponent(q)}` : "/opengraph-image", ...OG_SIZE }],
+    },
     // Result pages are endless permutations: keep them out of the index, follow the links.
     robots: { index: false, follow: true },
   }

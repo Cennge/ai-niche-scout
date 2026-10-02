@@ -7,7 +7,7 @@ import { ColumnChartCard, RankedBarChartCard } from "@/components/niche-charts"
 import { SiteList } from "@/components/site-list"
 import { Button } from "@/components/ui/button"
 import { getNicheProfile, getNicheStats, getTotalStartups, searchSites } from "@/lib/freeserp"
-import { formatNumber } from "@/lib/format"
+import { clampText, formatNumber } from "@/lib/format"
 import { getNicheBySlug, NICHES } from "@/lib/niches"
 import { SITE_URL } from "@/lib/site"
 import { cn } from "@/lib/utils"
@@ -27,7 +27,10 @@ export async function generateMetadata(props: PageProps<"/niche/[slug]">): Promi
   const count = stat ? formatNumber(stat.total) : "All"
   return {
     title: `${niche.name}: ${count} AI startups`,
-    description: `${niche.blurb} Browse ${count} AI startups in ${niche.name}, with Domain Rating, launch data and similar niches.`,
+    description: clampText(
+      `${niche.blurb} Browse ${count} AI startups in ${niche.name}: leaders, newest arrivals and market charts.`,
+      160,
+    ),
     alternates: { canonical: `/niche/${slug}` },
     openGraph: { title: `${count} AI startups in ${niche.name}`, url: `/niche/${slug}` },
   }

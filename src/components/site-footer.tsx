@@ -10,7 +10,7 @@ const POPULAR = NICHES.slice(0, 8)
 function FooterColumn({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <nav aria-label={title} className="flex flex-col gap-3">
-      <h2 className="text-sm font-medium">{title}</h2>
+      <p className="text-sm font-medium">{title}</p>
       <ul className="flex flex-col gap-2 text-sm text-muted-foreground">{children}</ul>
     </nav>
   )
