@@ -2,7 +2,7 @@
 
 **Is your AI idea already taken?** Сервис, который за несколько секунд показывает, кто уже делает вашу AI-идею, насколько занята ниша и как выглядит весь рынок AI-стартапов. Построен на публичном API [FreeSerp](https://freeserp.ai): индекс главных страниц сайтов (`index=sites`), ниша AI.
 
-- **Демо:** _ссылка на Vercel будет добавлена после деплоя_
+- **Демо:** [ws-65.ws.semalt.dev](https://ws-65.ws.semalt.dev), размещено в воркспейсе Semalt
 - **Код:** [github.com/Cennge/ai-niche-scout](https://github.com/Cennge/ai-niche-scout)
 - **Стек:** Next.js 16 (App Router), TypeScript, Tailwind v4, shadcn/ui
 - **Подробный план:** [PLAN.md](PLAN.md)
@@ -113,9 +113,20 @@ npm run lint
 
 Необязательная переменная `NEXT_PUBLIC_SITE_URL` задаёт домен для canonical, sitemap и OG. На Vercel домен подставляется автоматически.
 
+### Как развёрнуто в воркспейсе
+
+Демо работает в воркспейсе Semalt (Debian 13, Node 22). Развёртывание делал Claude Code через MCP-коннектор воркспейса:
+
+1. `git clone` в `/home/ws/projects/ai-niche-scout`, затем `npm ci` и `npm test`.
+2. `NEXT_PUBLIC_SITE_URL=https://ws-65.ws.semalt.dev npm run build`, чтобы canonical, sitemap и OG вели на боевой домен.
+3. Сервис systemd `ai-niche-scout`: `next start` на `127.0.0.1:3000`, автозапуск и перезапуск при падении.
+4. nginx проксирует на него сайт по умолчанию. Буферизация выключена, чтобы работала потоковая отдача. Прежний конфиг сохранён в `default.bak`.
+5. Проверка браузером изнутри воркспейса: все страницы отвечают 200, несуществующие — 404, sitemap и canonical указывают на `ws-65.ws.semalt.dev`.
+
+Обновление после изменений: `git pull && npm ci && npm run build && sudo systemctl restart ai-niche-scout`.
+
 ## Что не успел
 
-- **Деплой на Vercel.** Код готов, осталось подключить репозиторий.
 - **Автоматические браузерные тесты в CI.** Прогоны Playwright и axe делались локальными скриптами, в репозиторий и CI они не вынесены.
 - **404 несуществующего стартапа.** Код 404 и `noindex` верные, пользователь видит обычную 404-страницу. Но в исходном HTML это оболочка Next, а саму страницу дорисовывает клиент: так Next 16 ведёт себя для динамических маршрутов.
 - **Проверка на реальных устройствах.** Анимации замерены в Chromium. Firefox, Safari и телефоны нужно проверить вручную.
